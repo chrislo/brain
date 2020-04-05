@@ -13,7 +13,7 @@ fn main() {
     let sock = UdpSocket::bind(host_addr).unwrap();
 
     loop {
-        let mut msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
+        let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
             addr: "/sampler/1".to_string(),
             args: vec![],
         }))
