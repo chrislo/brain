@@ -12,14 +12,22 @@ fn main() {
     let to_addr = SocketAddrV4::from_str("127.0.0.1:49162").unwrap();
     let sock = UdpSocket::bind(host_addr).unwrap();
 
-    loop {
-        let msg_buf = encoder::encode(&OscPacket::Message(OscMessage {
-            addr: "/sampler/1".to_string(),
-            args: vec![],
-        }))
-        .unwrap();
+    struct Event;
 
-        sock.send_to(&msg_buf, to_addr).unwrap();
+    impl Event {
+        fn to_osc_message(&self) -> Vec<u8> {
+            encoder::encode(&OscPacket::Message(OscMessage {
+                addr: "/sampler/1".to_string(),
+                args: vec![],
+            }))
+            .unwrap()
+        }
+    }
+
+    loop {
+        let event = Event;
+
+        sock.send_to(&event.to_osc_message(), to_addr).unwrap();
 
         thread::sleep(Duration::from_millis(500));
     }
