@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Measure(pub i32, pub i32);
 
 impl Measure {
@@ -7,6 +7,16 @@ impl Measure {
         let length_of_measure_in_beats = 4. / self.1 as f32;
 
         (length_of_measure_in_beats * (self.0 as f32) * ms_per_beat).ceil() as u64
+    }
+
+    pub fn to_float(&self) -> f32 {
+        self.0 as f32 / self.1 as f32
+    }
+
+    pub fn reduce_to_one_bar(&self) -> Measure {
+        let range = 1..(self.1 + 1);
+        let a = range.cycle().take(self.0 as usize).last().unwrap();
+        Measure(a, self.1)
     }
 }
 
@@ -37,4 +47,15 @@ fn test_to_ms() {
 #[test]
 fn test_equality() {
     assert!(Measure(1, 4) == Measure(1, 4))
+}
+
+#[test]
+fn test_to_float() {
+    assert_eq!(Measure(1, 4).to_float(), 0.25);
+}
+
+#[test]
+fn test_reduce_to_one_bar() {
+    assert_eq!(Measure(5, 4).reduce_to_one_bar(), Measure(1, 4));
+    assert_eq!(Measure(17, 16).reduce_to_one_bar(), Measure(1, 16));
 }
