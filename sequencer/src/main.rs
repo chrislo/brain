@@ -15,9 +15,8 @@ mod pattern;
 use pattern::Pattern;
 
 fn main() {
-    let host_addr = SocketAddrV4::from_str("127.0.0.1:49161").unwrap();
+    let sock = UdpSocket::bind("0.0.0.0:0").unwrap();
     let to_addr = SocketAddrV4::from_str("127.0.0.1:49162").unwrap();
-    let sock = UdpSocket::bind(host_addr).unwrap();
 
     let bpm = 120.0;
     let tick_length = Measure(1, 96);
