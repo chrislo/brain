@@ -22,18 +22,25 @@ fn main() {
     let tick_length = Measure(1, 96);
 
     let track = Track::new(vec![
-        Measure(1, 4),
-        Measure(2, 4),
-        Measure(3, 4),
-        Measure(4, 4),
+        Event {
+            start: Measure(1, 4),
+        },
+        Event {
+            start: Measure(2, 4),
+        },
+        Event {
+            start: Measure(3, 4),
+        },
+        Event {
+            start: Measure(4, 4),
+        },
     ]);
 
     let mut tick_counter = 1;
     loop {
-        let notes = track.notes_between(Measure(tick_counter, 96), Measure(tick_counter + 1, 96));
+        let events = track.events_between(Measure(tick_counter, 96), Measure(tick_counter + 1, 96));
 
-        for _note in notes {
-            let event = Event;
+        for event in events {
             sock.send_to(&event.to_osc_message(), to_addr).unwrap();
         }
 
