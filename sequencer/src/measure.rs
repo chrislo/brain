@@ -1,12 +1,16 @@
+use std::time::Duration;
+
 #[derive(Clone, Debug)]
 pub struct Measure(pub i32, pub i32);
 
 impl Measure {
-    pub fn to_ms(&self, bpm: f32) -> u64 {
+    pub fn to_duration(&self, bpm: f32) -> Duration {
         let ms_per_beat = (60. / bpm) * 1000.;
         let length_of_measure_in_beats = 4. / self.1 as f32;
+        let length_of_measure_in_ms =
+            (length_of_measure_in_beats * (self.0 as f32) * ms_per_beat) as u64;
 
-        (length_of_measure_in_beats * (self.0 as f32) * ms_per_beat).ceil() as u64
+        Duration::from_millis(length_of_measure_in_ms)
     }
 
     pub fn to_float(&self) -> f32 {
@@ -27,21 +31,21 @@ impl PartialEq for Measure {
 }
 
 #[test]
-fn test_to_ms() {
+fn test_to_duration() {
     let measure = Measure(1, 16);
     let bpm = 60.0;
 
-    assert_eq!(250, measure.to_ms(bpm));
+    assert_eq!(Duration::from_millis(250), measure.to_duration(bpm));
 
     let measure = Measure(1, 4);
     let bpm = 120.0;
 
-    assert_eq!(500, measure.to_ms(bpm));
+    assert_eq!(Duration::from_millis(500), measure.to_duration(bpm));
 
     let measure = Measure(2, 4);
     let bpm = 120.0;
 
-    assert_eq!(1000, measure.to_ms(bpm));
+    assert_eq!(Duration::from_millis(1000), measure.to_duration(bpm));
 }
 
 #[test]
