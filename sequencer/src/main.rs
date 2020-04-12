@@ -11,8 +11,8 @@ use event::Event;
 mod measure;
 use measure::Measure;
 
-mod pattern;
-use pattern::Pattern;
+mod track;
+use track::Track;
 
 fn main() {
     let sock = UdpSocket::bind("0.0.0.0:0").unwrap();
@@ -21,7 +21,7 @@ fn main() {
     let bpm = 120.0;
     let tick_length = Measure(1, 96);
 
-    let pattern = Pattern::new(vec![
+    let track = Track::new(vec![
         Measure(1, 4),
         Measure(2, 4),
         Measure(3, 4),
@@ -30,7 +30,7 @@ fn main() {
 
     let mut tick_counter = 1;
     loop {
-        let notes = pattern.notes_between(Measure(tick_counter, 96), Measure(tick_counter + 1, 96));
+        let notes = track.notes_between(Measure(tick_counter, 96), Measure(tick_counter + 1, 96));
 
         for _note in notes {
             let event = Event;
