@@ -5,8 +5,8 @@
 - [ ] Pitch/rate control of samples
 - [x] Make the sequencer do something more useful
 - [ ] Message receive thread in sequencer to allow notes to be added to the pattern via OSC messages
-- [ ] Correct for drift in main loop in sequencer. We know how many ticks have  been run and how long this tick has taken, so we should be able to sleep for the correct amount of time to avoid any drift
-- [ ] Introduce Note type in sequencer to allow different pitches/samples to be played
+- [x] Correct for drift in main loop in sequencer. We know how many ticks have  been run and how long this tick has taken, so we should be able to sleep for the correct amount of time to avoid any drift
+- [x] Introduce Note type in sequencer to allow different pitches/samples to be played
 
 * Notes
 
