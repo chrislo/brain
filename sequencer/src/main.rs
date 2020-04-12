@@ -3,7 +3,7 @@ extern crate rosc;
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 mod event;
 use event::Event;
@@ -38,6 +38,8 @@ fn main() {
 
     let mut tick_counter = 1;
     loop {
+        let now = Instant::now();
+
         let events = track.events_between(Measure(tick_counter, 96), Measure(tick_counter + 1, 96));
 
         for event in events {
@@ -45,6 +47,9 @@ fn main() {
         }
 
         tick_counter += 1;
-        thread::sleep(Duration::from_millis(tick_length.to_ms(bpm)));
+
+        let elapsed_time = now.elapsed();
+        let sleep_time = Duration::from_millis(tick_length.to_ms(bpm)) - elapsed_time;
+        thread::sleep(sleep_time);
     }
 }
