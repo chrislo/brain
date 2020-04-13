@@ -1,7 +1,5 @@
 extern crate rosc;
 
-use std::net::{SocketAddrV4, UdpSocket};
-use std::str::FromStr;
 use std::thread;
 use std::time::Instant;
 
@@ -15,9 +13,6 @@ mod track;
 use track::Track;
 
 fn main() {
-    let sock = UdpSocket::bind("0.0.0.0:0").unwrap();
-    let to_addr = SocketAddrV4::from_str("127.0.0.1:49162").unwrap();
-
     let bpm = 120.0;
     let tick_length = Measure(1, 96);
 
@@ -41,9 +36,8 @@ fn main() {
         let now = Instant::now();
 
         let events = track.events_between(Measure(tick_counter, 96), Measure(tick_counter + 1, 96));
-
         for event in events {
-            sock.send_to(&event.to_osc_message(), to_addr).unwrap();
+            event.send_via_osc();
         }
 
         tick_counter += 1;
