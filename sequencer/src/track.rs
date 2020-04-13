@@ -10,6 +10,10 @@ impl Track {
         Track { events: events }
     }
 
+    pub fn add_event(&mut self, event: Event) {
+        self.events.push(event)
+    }
+
     pub fn events_between(&self, start: Measure, end: Measure) -> Vec<Event> {
         let start_float = start.reduce_to_one_bar().to_float();
         let end_float = end.reduce_to_one_bar().to_float();
