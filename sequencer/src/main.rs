@@ -16,6 +16,7 @@ fn main() {
     let event_thread = thread::spawn(move || {
         let bpm = 120.0;
         let tick_length = Measure(1, 96);
+        let mut current_tick = Measure(1, 96);
 
         let track = Track::new(vec![
             Event {
@@ -32,12 +33,10 @@ fn main() {
             },
         ]);
 
-        let mut tick_counter = 1;
         loop {
             let now = Instant::now();
-
-            let events =
-                track.events_between(Measure(tick_counter, 96), Measure(tick_counter + 1, 96));
+            let next_tick = current_tick + tick_length;
+            let events = track.events_between(current_tick, next_tick);
             for event in events {
                 event.send_via_osc();
             }
@@ -46,7 +45,7 @@ fn main() {
             let sleep_time = tick_length.to_duration(bpm) - elapsed_time;
             thread::sleep(sleep_time);
 
-            tick_counter += 1;
+            current_tick = next_tick;
         }
     });
 
