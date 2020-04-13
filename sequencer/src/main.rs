@@ -40,10 +40,10 @@ fn main() {
             event.send_via_osc();
         }
 
-        tick_counter += 1;
-
         let elapsed_time = now.elapsed();
         let sleep_time = tick_length.to_duration(bpm) - elapsed_time;
         thread::sleep(sleep_time);
+
+        tick_counter += 1;
     }
 }
