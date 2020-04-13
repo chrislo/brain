@@ -1,3 +1,6 @@
+extern crate num_rational;
+
+use std::ops::Add;
 use std::time::Duration;
 
 #[derive(Clone, Debug)]
@@ -27,6 +30,18 @@ impl Measure {
 impl PartialEq for Measure {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0 && self.1 == other.1
+    }
+}
+
+impl Add for Measure {
+    type Output = Measure;
+
+    fn add(self, other: Measure) -> Measure {
+        let self_as_ratio = num_rational::Ratio::new(self.0, self.1);
+        let other_as_ratio = num_rational::Ratio::new(other.0, other.1);
+        let addition = self_as_ratio + other_as_ratio;
+
+        Measure(*addition.numer(), *addition.denom())
     }
 }
 
@@ -62,4 +77,9 @@ fn test_to_float() {
 fn test_reduce_to_one_bar() {
     assert_eq!(Measure(5, 4).reduce_to_one_bar(), Measure(1, 4));
     assert_eq!(Measure(17, 16).reduce_to_one_bar(), Measure(1, 16));
+}
+
+#[test]
+fn test_addition() {
+    assert_eq!(Measure(1, 8), Measure(1, 16) + Measure(1, 16));
 }
