@@ -24,7 +24,7 @@ fn main() {
         let tick_length = Measure(1, 96);
         let mut current_tick = Measure(1, 96);
 
-        let mut track = Track::new(vec![]);
+        let mut track = Track::new();
 
         loop {
             match r.try_recv() {
