@@ -11,7 +11,9 @@ impl Track {
     }
 
     pub fn add_event(&mut self, event: Event) {
-        self.events.push(event)
+        if !self.events.contains(&event) {
+            self.events.push(event)
+        }
     }
 
     pub fn events_between(&self, start: Measure, end: Measure) -> Vec<Event> {
@@ -24,6 +26,24 @@ impl Track {
             .filter(|e| e.start.to_float() > start_float && e.start.to_float() <= end_float)
             .collect::<Vec<Event>>()
     }
+}
+
+#[test]
+fn test_add_event() {
+    let mut track = Track::new();
+    track.add_event(Event {
+        start: Measure(2, 16),
+    });
+
+    let events = track.events_between(Measure(1, 16), Measure(3, 16));
+    assert_eq!(events.len(), 1);
+
+    // Do not allow the same event to be added twice
+    track.add_event(Event {
+        start: Measure(2, 16),
+    });
+    let events = track.events_between(Measure(1, 16), Measure(3, 16));
+    assert_eq!(events.len(), 1);
 }
 
 #[test]

@@ -25,3 +25,9 @@ impl Event {
         .unwrap()
     }
 }
+
+impl PartialEq for Event {
+    fn eq(&self, other: &Self) -> bool {
+        self.start == other.start
+    }
+}
