@@ -16,6 +16,7 @@ mod track;
 use track::Track;
 
 mod control;
+use control::Message;
 
 fn main() {
     let (s, r) = unbounded();
@@ -29,10 +30,13 @@ fn main() {
 
         loop {
             match r.try_recv() {
-                Ok(msg) => {
-                    track.add_event(Event { start: msg });
-                }
-                _ => {}
+                Ok(message) => match message {
+                    Message::ToggleStep { step: m } => {
+                        track.add_event(Event { start: m });
+                    }
+                    Message::Unhandled => {}
+                },
+                Err(_e) => {}
             }
 
             let now = Instant::now();
@@ -59,8 +63,8 @@ fn main() {
                 let packet = rosc::decoder::decode(&buf[..size]).unwrap();
                 let message = control::parse_incoming_osc_message(packet);
                 match message {
-                    Ok(msg) => s.send(msg).unwrap(),
-                    _ => {}
+                    Message::ToggleStep { .. } => s.send(message).unwrap(),
+                    Message::Unhandled => {}
                 }
             }
             Err(e) => {
