@@ -57,7 +57,7 @@ fn main() {
         match sock.recv_from(&mut buf) {
             Ok((size, _addr)) => {
                 let packet = rosc::decoder::decode(&buf[..size]).unwrap();
-                let message = control::parse_packet(packet);
+                let message = control::parse_incoming_osc_message(packet);
                 match message {
                     Ok(msg) => s.send(msg).unwrap(),
                     _ => {}
