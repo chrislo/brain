@@ -2,7 +2,6 @@ extern crate crossbeam;
 extern crate rosc;
 
 use crossbeam::crossbeam_channel::unbounded;
-use rosc::OscPacket;
 use std::net::UdpSocket;
 use std::thread;
 use std::time::Instant;
@@ -15,6 +14,8 @@ use measure::Measure;
 
 mod track;
 use track::Track;
+
+mod control;
 
 fn main() {
     let (s, r) = unbounded();
@@ -56,7 +57,7 @@ fn main() {
         match sock.recv_from(&mut buf) {
             Ok((size, _addr)) => {
                 let packet = rosc::decoder::decode(&buf[..size]).unwrap();
-                let message = parse_packet(packet);
+                let message = control::parse_packet(packet);
                 match message {
                     Ok(msg) => s.send(msg).unwrap(),
                     _ => {}
@@ -70,34 +71,4 @@ fn main() {
     }
 
     event_thread.join().unwrap();
-}
-
-fn parse_packet(packet: OscPacket) -> Result<Measure, &'static str> {
-    match packet {
-        OscPacket::Message(msg) => match msg.args[0] {
-            rosc::OscType::Int(i) => Ok(Measure(i - 35, 16)),
-            _ => Err("Unable to handle packet"),
-        },
-        _ => Err("Unable to handle packet"),
-    }
-}
-
-#[cfg(test)]
-use rosc::OscMessage;
-
-#[test]
-fn test_parse_packet() {
-    let packet = OscPacket::Message(OscMessage {
-        addr: "/midi/atom/1/10/note_on".to_string(),
-        args: vec![rosc::OscType::Int(36)],
-    });
-    let msg = parse_packet(packet);
-    assert_eq!(msg.unwrap(), Measure(1, 16));
-
-    let packet = OscPacket::Message(OscMessage {
-        addr: "/midi/atom/1/10/note_on".to_string(),
-        args: vec![rosc::OscType::Int(51)],
-    });
-    let msg = parse_packet(packet);
-    assert_eq!(msg.unwrap(), Measure(16, 16));
 }
