@@ -6,7 +6,7 @@ pub struct Track {
 }
 
 impl Track {
-    pub fn new() -> Track {
+    pub fn empty() -> Track {
         Track { events: vec![] }
     }
 
@@ -30,7 +30,7 @@ impl Track {
 
 #[test]
 fn test_add_event() {
-    let mut track = Track::new();
+    let mut track = Track::empty();
     track.add_event(Event {
         start: Measure(2, 16),
     });
@@ -48,7 +48,7 @@ fn test_add_event() {
 
 #[test]
 fn test_events_between() {
-    let mut track = Track::new();
+    let mut track = Track::empty();
     track.add_event(Event {
         start: Measure(2, 16),
     });
@@ -62,7 +62,7 @@ fn test_events_between() {
     let events = track.events_between(Measure(17, 16), Measure(19, 16));
     assert_eq!(Measure(2, 16), events[0].start);
 
-    let mut track = Track::new();
+    let mut track = Track::empty();
     track.add_event(Event {
         start: Measure(1, 16),
     });

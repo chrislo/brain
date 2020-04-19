@@ -26,7 +26,7 @@ fn main() {
         let tick_length = Measure(1, 96);
         let mut current_tick = Measure(1, 96);
 
-        let mut track = Track::new();
+        let mut track = Track::empty();
 
         loop {
             match r.try_recv() {
