@@ -7,7 +7,6 @@ use std::thread;
 use std::time::Instant;
 
 mod event;
-use event::Event;
 
 mod measure;
 use measure::Measure;
@@ -26,22 +25,15 @@ fn main() {
         let tick_length = Measure(1, 96);
         let mut current_tick = Measure(1, 96);
 
-        let mut track = Track::empty();
+        let mut current_track = Track::empty();
 
         loop {
-            match r.try_recv() {
-                Ok(message) => match message {
-                    Message::ToggleStep { step: m } => {
-                        track.add_event(Event { start: m });
-                    }
-                    Message::Unhandled => {}
-                },
-                Err(_e) => {}
-            }
+            let messages = r.try_iter().collect();
+            let next_track = current_track.process_messages(messages);
 
             let now = Instant::now();
             let next_tick = current_tick + tick_length;
-            let events = track.events_between(current_tick, next_tick);
+            let events = current_track.events_between(current_tick, next_tick);
             for event in events {
                 event.send_via_osc();
             }
@@ -51,6 +43,7 @@ fn main() {
             thread::sleep(sleep_time);
 
             current_tick = next_tick;
+            current_track = next_track;
         }
     });
 
