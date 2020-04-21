@@ -39,44 +39,24 @@ impl Track {
 
     fn process_message(&self, message: &Message) -> Track {
         match message {
-            Message::ToggleStep { step: measure } => {
-                let mut new_track = self.clone();
-                new_track.add_event(Event { start: *measure });
-                new_track
-            }
+            Message::ToggleStep { step: measure } => self.add_event(Event { start: *measure }),
             Message::Unhandled => self.clone(),
         }
     }
 
-    fn add_event(&mut self, event: Event) {
-        if !self.events.contains(&event) {
-            self.events.push(event)
+    fn add_event(&self, event: Event) -> Track {
+        let mut new_track = self.clone();
+
+        if !new_track.events.contains(&event) {
+            new_track.events.push(event);
         }
+        new_track
     }
 }
 
 #[test]
-fn test_add_event() {
-    let mut track = Track::empty();
-    track.add_event(Event {
-        start: Measure(2, 16),
-    });
-
-    let events = track.events_between(Measure(1, 16), Measure(3, 16));
-    assert_eq!(events.len(), 1);
-
-    // Do not allow the same event to be added twice
-    track.add_event(Event {
-        start: Measure(2, 16),
-    });
-    let events = track.events_between(Measure(1, 16), Measure(3, 16));
-    assert_eq!(events.len(), 1);
-}
-
-#[test]
 fn test_events_between() {
-    let mut track = Track::empty();
-    track.add_event(Event {
+    let track = Track::empty().add_event(Event {
         start: Measure(2, 16),
     });
 
@@ -89,8 +69,7 @@ fn test_events_between() {
     let events = track.events_between(Measure(17, 16), Measure(19, 16));
     assert_eq!(Measure(2, 16), events[0].start);
 
-    let mut track = Track::empty();
-    track.add_event(Event {
+    let track = Track::empty().add_event(Event {
         start: Measure(1, 16),
     });
     let events = track.events_between(Measure(1, 32), Measure(2, 32));
