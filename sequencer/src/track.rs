@@ -2,7 +2,7 @@ use crate::control::Message;
 use crate::event::Event;
 use crate::measure::Measure;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Track {
     events: Vec<Event>,
 }
