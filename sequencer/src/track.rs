@@ -41,7 +41,7 @@ impl Track {
 
     fn process_message(&self, message: &Message) -> Track {
         match message {
-            Message::ToggleStep { step: measure } => self.add_event(Event { start: *measure }),
+            Message::NoteOn { step: measure } => self.add_event(Event { start: *measure }),
             Message::Unhandled => self.clone(),
         }
     }
@@ -83,7 +83,7 @@ fn test_events_between() {
 #[test]
 fn test_process_message() {
     let track = Track::empty();
-    let message = Message::ToggleStep {
+    let message = Message::NoteOn {
         step: Measure(2, 4),
     };
     let processed_track = track.process_message(&message);
@@ -98,10 +98,10 @@ fn test_process_message() {
 #[test]
 fn test_process_messages() {
     let track = Track::empty();
-    let message1 = Message::ToggleStep {
+    let message1 = Message::NoteOn {
         step: Measure(2, 4),
     };
-    let message2 = Message::ToggleStep {
+    let message2 = Message::NoteOn {
         step: Measure(3, 4),
     };
     let processed_track = track.process_messages(vec![message1, message2]);
@@ -116,10 +116,10 @@ fn test_process_messages() {
 #[test]
 fn test_process_toggle_step_message_to_remove_step() {
     let track = Track::empty();
-    let message1 = Message::ToggleStep {
+    let message1 = Message::NoteOn {
         step: Measure(2, 4),
     };
-    let message2 = Message::ToggleStep {
+    let message2 = Message::NoteOn {
         step: Measure(2, 4),
     };
     let processed_track = track.process_messages(vec![message1, message2]);
@@ -134,7 +134,7 @@ fn test_process_toggle_step_message_to_remove_step() {
 #[test]
 fn test_process_messages_when_empty() {
     let track1 = Track::empty();
-    let message1 = Message::ToggleStep {
+    let message1 = Message::NoteOn {
         step: Measure(2, 4),
     };
     let track2 = track1.process_messages(vec![message1]);

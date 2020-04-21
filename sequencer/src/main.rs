@@ -56,7 +56,7 @@ fn main() {
                 let packet = rosc::decoder::decode(&buf[..size]).unwrap();
                 let message = control::parse_incoming_osc_message(packet);
                 match message {
-                    Message::ToggleStep { .. } => s.send(message).unwrap(),
+                    Message::NoteOn { .. } => s.send(message).unwrap(),
                     Message::Unhandled => {}
                 }
             }
