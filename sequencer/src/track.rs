@@ -23,15 +23,17 @@ impl Track {
             .collect::<Vec<Event>>()
     }
 
-    pub fn process_messages(&self, messages: Vec<Message>) -> Track {
+    pub fn process_messages(&self, mut messages: Vec<Message>) -> Track {
         match messages.len() {
             0 => self.clone(),
             _ => {
-                let mut result = self.process_message(&messages[0]);
+                let first_message = messages.remove(0);
+                let mut result = self.process_message(&first_message);
 
                 for message in messages {
                     result = result.process_message(&message);
                 }
+
                 result
             }
         }
@@ -49,6 +51,8 @@ impl Track {
 
         if !new_track.events.contains(&event) {
             new_track.events.push(event);
+        } else {
+            new_track.events.retain(|e| *e != event);
         }
         new_track
     }
@@ -103,6 +107,24 @@ fn test_process_messages() {
     let processed_track = track.process_messages(vec![message1, message2]);
     assert_eq!(
         2,
+        processed_track
+            .events_between(Measure(1, 4), Measure(4, 4))
+            .len()
+    );
+}
+
+#[test]
+fn test_process_toggle_step_message_to_remove_step() {
+    let track = Track::empty();
+    let message1 = Message::ToggleStep {
+        step: Measure(2, 4),
+    };
+    let message2 = Message::ToggleStep {
+        step: Measure(2, 4),
+    };
+    let processed_track = track.process_messages(vec![message1, message2]);
+    assert_eq!(
+        0,
         processed_track
             .events_between(Measure(1, 4), Measure(4, 4))
             .len()
