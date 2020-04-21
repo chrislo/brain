@@ -41,12 +41,12 @@ impl Track {
 
     fn process_message(&self, message: &Message) -> Track {
         match message {
-            Message::NoteOn { note_number: n } => self.add_event(note_number_to_measure(*n)),
+            Message::NoteOn { note_number: n } => self.toggle_step(note_number_to_measure(*n)),
             Message::Unhandled => self.clone(),
         }
     }
 
-    fn add_event(&self, measure: Measure) -> Track {
+    fn toggle_step(&self, measure: Measure) -> Track {
         let event = Event { start: measure };
         let mut new_track = self.clone();
 
@@ -65,7 +65,7 @@ fn note_number_to_measure(note_number: i32) -> Measure {
 
 #[test]
 fn test_events_between() {
-    let track = Track::empty().add_event(Measure(2, 16));
+    let track = Track::empty().toggle_step(Measure(2, 16));
 
     let events = track.events_between(Measure(1, 16), Measure(3, 16));
     assert_eq!(Measure(2, 16), events[0].start);
@@ -76,7 +76,7 @@ fn test_events_between() {
     let events = track.events_between(Measure(17, 16), Measure(19, 16));
     assert_eq!(Measure(2, 16), events[0].start);
 
-    let track = Track::empty().add_event(Measure(1, 16));
+    let track = Track::empty().toggle_step(Measure(1, 16));
     let events = track.events_between(Measure(1, 32), Measure(2, 32));
     assert_eq!(Measure(1, 16), events[0].start);
 }
