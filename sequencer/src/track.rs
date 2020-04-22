@@ -42,7 +42,7 @@ impl Track {
     fn process_message(&self, message: &Message) -> Track {
         match message {
             Message::NoteOn { note_number: n } => self.toggle_step(note_number_to_measure(*n)),
-            Message::Unhandled => self.clone(),
+            _ => self.clone(),
         }
     }
 

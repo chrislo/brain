@@ -57,7 +57,7 @@ fn main() {
                 let message = control::parse_incoming_osc_message(packet);
                 match message {
                     Message::NoteOn { .. } => s.send(message).unwrap(),
-                    Message::Unhandled => {}
+                    _ => {}
                 }
             }
             Err(e) => {
