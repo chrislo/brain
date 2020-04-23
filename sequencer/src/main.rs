@@ -28,15 +28,15 @@ fn main() {
         let mut current_track = Track::empty();
 
         loop {
-            let messages = r.try_iter().collect();
-            let next_track = current_track.process_messages(messages);
-
             let now = Instant::now();
             let next_tick = current_tick + tick_length;
             let events = current_track.events_between(current_tick, next_tick);
             for event in events {
                 event.send_via_osc();
             }
+
+            let messages = r.try_iter().collect();
+            let next_track = current_track.process_messages(messages);
 
             let elapsed_time = now.elapsed();
             let sleep_time = tick_length.to_duration(bpm) - elapsed_time;
