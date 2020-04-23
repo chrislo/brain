@@ -47,7 +47,7 @@ fn main() {
         }
     });
 
-    let sock = UdpSocket::bind("0.0.0.0:49161").unwrap();
+    let sock = UdpSocket::bind("127.0.0.1:57120").unwrap();
     let mut buf = [0u8; rosc::decoder::MTU];
 
     loop {
