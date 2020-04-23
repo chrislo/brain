@@ -28,13 +28,13 @@ impl Track {
             0 => self.clone(),
             _ => {
                 let first_message = messages.remove(0);
-                let mut result = self.process_message(&first_message);
+                let mut new_track = self.process_message(&first_message);
 
                 for message in messages {
-                    result = result.process_message(&message);
+                    new_track = new_track.process_message(&message);
                 }
 
-                result
+                new_track
             }
         }
     }
