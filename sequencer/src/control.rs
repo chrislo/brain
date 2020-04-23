@@ -1,6 +1,6 @@
 use rosc::OscPacket;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Message {
     NoteOn { note_number: i32 },
     NoteOff { note_number: i32 },

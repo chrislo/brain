@@ -23,14 +23,15 @@ impl Track {
             .collect::<Vec<Event>>()
     }
 
-    pub fn process_messages(&self, mut messages: Vec<Message>) -> Track {
+    pub fn process_messages(&self, messages: Vec<Message>) -> Track {
         match messages.len() {
             0 => self.clone(),
             _ => {
-                let first_message = messages.remove(0);
+                let mut this_messages = messages.clone();
+                let first_message = this_messages.remove(0);
                 let mut new_track = self.process_message(&first_message);
 
-                for message in messages {
+                for message in this_messages {
                     new_track = new_track.process_message(&message);
                 }
 
