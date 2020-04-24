@@ -1,3 +1,4 @@
+pub mod atom;
 pub mod control;
 pub mod event;
 pub mod measure;

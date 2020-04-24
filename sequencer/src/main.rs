@@ -6,12 +6,15 @@ use std::net::UdpSocket;
 use std::thread;
 use std::time::Instant;
 
+use sequencer::atom;
 use sequencer::control::parse_incoming_osc_message;
 use sequencer::control::Message;
 use sequencer::measure::Measure;
 use sequencer::track::Track;
 
 fn main() {
+    atom::handshake();
+
     let (s, r) = unbounded();
 
     let event_thread = thread::spawn(move || {
