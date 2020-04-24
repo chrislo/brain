@@ -4,7 +4,7 @@ use rosc::{OscMessage, OscPacket};
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Event {
     pub start: Measure,
 }

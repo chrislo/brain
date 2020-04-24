@@ -51,12 +51,16 @@ impl Track {
         let event = Event { start: measure };
         let mut new_track = self.clone();
 
-        if !new_track.events.contains(&event) {
+        if new_track.missing(event) {
             new_track.events.push(event);
         } else {
             new_track.events.retain(|e| *e != event);
         }
         new_track
+    }
+
+    fn missing(&self, event: Event) -> bool {
+        !self.events.contains(&event)
     }
 }
 
