@@ -49,13 +49,23 @@ impl Track {
 
     fn toggle_step(&self, measure: Measure) -> Track {
         let event = Event { start: measure };
-        let mut new_track = self.clone();
 
-        if new_track.missing(event) {
-            new_track.events.push(event);
+        if self.missing(event) {
+            self.add_event(event)
         } else {
-            new_track.events.retain(|e| *e != event);
+            self.remove_event(event)
         }
+    }
+
+    fn add_event(&self, event: Event) -> Track {
+        let mut new_track = self.clone();
+        new_track.events.push(event);
+        new_track
+    }
+
+    fn remove_event(&self, event: Event) -> Track {
+        let mut new_track = self.clone();
+        new_track.events.retain(|e| *e != event);
         new_track
     }
 
