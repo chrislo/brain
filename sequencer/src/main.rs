@@ -6,16 +6,10 @@ use std::net::UdpSocket;
 use std::thread;
 use std::time::Instant;
 
-mod event;
-
-mod measure;
-use measure::Measure;
-
-mod track;
-use track::Track;
-
-mod control;
-use control::Message;
+use sequencer::control::parse_incoming_osc_message;
+use sequencer::control::Message;
+use sequencer::measure::Measure;
+use sequencer::track::Track;
 
 fn main() {
     let (s, r) = unbounded();
@@ -54,7 +48,7 @@ fn main() {
         match sock.recv_from(&mut buf) {
             Ok((size, _addr)) => {
                 let packet = rosc::decoder::decode(&buf[..size]).unwrap();
-                let message = control::parse_incoming_osc_message(packet);
+                let message = parse_incoming_osc_message(packet);
                 match message {
                     Message::NoteOn { .. } => s.send(message).unwrap(),
                     _ => {}
