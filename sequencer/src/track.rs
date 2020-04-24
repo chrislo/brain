@@ -58,15 +58,15 @@ impl Track {
     }
 
     fn add_event(&self, event: Event) -> Track {
-        let mut new_track = self.clone();
-        new_track.events.push(event);
-        new_track
+        let mut events = self.events.clone();
+        events.push(event);
+        Track { events: events }
     }
 
     fn remove_event(&self, event: Event) -> Track {
-        let mut new_track = self.clone();
-        new_track.events.retain(|e| *e != event);
-        new_track
+        let mut events = self.events.clone();
+        events.retain(|e| *e != event);
+        Track { events: events }
     }
 
     fn missing(&self, event: Event) -> bool {
