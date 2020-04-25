@@ -27,31 +27,18 @@ impl Track {
     }
 
     pub fn toggle_step(&self, measure: Measure) -> Track {
-        if self.missing(measure) {
-            self.add_step(measure)
+        let mut steps = self.steps.clone();
+
+        if self.steps.contains(&measure) {
+            steps.remove(&measure);
         } else {
-            self.remove_step(measure)
+            steps.insert(measure);
         }
+        Track { steps: steps }
     }
 
     pub fn active_steps(&self) -> HashSet<Measure> {
         self.steps.clone()
-    }
-
-    fn add_step(&self, step: Measure) -> Track {
-        let mut steps = self.steps.clone();
-        steps.insert(step);
-        Track { steps: steps }
-    }
-
-    fn remove_step(&self, step: Measure) -> Track {
-        let mut steps = self.steps.clone();
-        steps.remove(&step);
-        Track { steps: steps }
-    }
-
-    fn missing(&self, step: Measure) -> bool {
-        !self.steps.contains(&step)
     }
 }
 
