@@ -24,9 +24,16 @@ pub fn handshake() {
     send_osc_to_o2m(packet);
 }
 
-pub fn update(context: &Context) {
-    for step in context.track.active_steps() {
-        turn_light_on(step_to_note_number(step));
+pub fn update(current_context: &Context, next_context: &Context) {
+    let current_context_steps = current_context.track.active_steps();
+    let next_context_steps = next_context.track.active_steps();
+
+    for step_added in next_context_steps.difference(&current_context_steps) {
+        turn_light_on(step_to_note_number(*step_added));
+    }
+
+    for step_removed in current_context_steps.difference(&next_context_steps) {
+        turn_light_off(step_to_note_number(*step_removed));
     }
 }
 

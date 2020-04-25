@@ -30,7 +30,7 @@ fn main() {
         loop {
             let now = Instant::now();
             let next_tick = current_tick + tick_length;
-            atom::update(&current_context);
+
             let events = current_context
                 .track
                 .events_between(current_tick, next_tick);
@@ -40,6 +40,8 @@ fn main() {
 
             let messages = r.try_iter().collect();
             let next_context = current_context.process_messages(messages);
+
+            atom::update(&current_context, &next_context);
 
             let elapsed_time = now.elapsed();
             let sleep_time = tick_length.to_duration(bpm) - elapsed_time;
