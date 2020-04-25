@@ -5,6 +5,11 @@ use rosc::{OscMessage, OscPacket};
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
 
+pub fn init() {
+    handshake();
+    turn_all_lights_off();
+}
+
 pub fn handshake() {
     let packet = encoder::encode(&OscPacket::Message(OscMessage {
         addr: "/atom/note_off".to_string(),
@@ -20,8 +25,6 @@ pub fn handshake() {
 }
 
 pub fn update(context: &Context) {
-    turn_all_lights_off();
-
     for step in context.track.active_steps() {
         turn_light_on(step_to_note_number(step));
     }

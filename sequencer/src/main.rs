@@ -14,7 +14,7 @@ use sequencer::measure::Measure;
 use sequencer::track::Track;
 
 fn main() {
-    atom::handshake();
+    atom::init();
 
     let (s, r) = unbounded();
 
