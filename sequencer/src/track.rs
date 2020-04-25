@@ -1,14 +1,17 @@
 use crate::event::Event;
 use crate::measure::Measure;
+use std::collections::HashSet;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Track {
-    steps: Vec<Measure>,
+    steps: HashSet<Measure>,
 }
 
 impl Track {
     pub fn empty() -> Track {
-        Track { steps: vec![] }
+        Track {
+            steps: HashSet::new(),
+        }
     }
 
     pub fn events_between(&self, start: Measure, end: Measure) -> Vec<Event> {
@@ -31,19 +34,19 @@ impl Track {
         }
     }
 
-    pub fn active_steps(&self) -> Vec<Measure> {
+    pub fn active_steps(&self) -> HashSet<Measure> {
         self.steps.clone()
     }
 
     fn add_step(&self, step: Measure) -> Track {
         let mut steps = self.steps.clone();
-        steps.push(step);
+        steps.insert(step);
         Track { steps: steps }
     }
 
     fn remove_step(&self, step: Measure) -> Track {
         let mut steps = self.steps.clone();
-        steps.retain(|s| *s != step);
+        steps.remove(&step);
         Track { steps: steps }
     }
 
@@ -79,7 +82,9 @@ fn test_active_steps() {
         .toggle_step(Measure(16, 16))
         .active_steps();
 
-    assert_eq!(active_steps, vec![Measure(1, 16), Measure(16, 16)]);
+    assert_eq!(2, active_steps.len());
+    assert!(active_steps.contains(&Measure(1, 16)));
+    assert!(active_steps.contains(&Measure(16, 16)));
 }
 
 #[test]

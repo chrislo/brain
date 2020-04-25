@@ -3,7 +3,7 @@ extern crate num_rational;
 use std::ops::Add;
 use std::time::Duration;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash)]
 pub struct Measure(pub i32, pub i32);
 
 impl Measure {

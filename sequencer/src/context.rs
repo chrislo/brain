@@ -2,7 +2,7 @@ use crate::control::Message;
 use crate::measure::Measure;
 use crate::track::Track;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Context {
     pub track: Track,
 }
