@@ -17,7 +17,7 @@ impl Context {
                 let mut new_context = self.process_message(&first_message);
 
                 for message in this_messages {
-                    new_context = self.process_message(&message);
+                    new_context = new_context.process_message(&message);
                 }
 
                 new_context
@@ -41,7 +41,7 @@ fn note_number_to_measure(note_number: i32) -> Measure {
 }
 
 #[test]
-fn test_process_messages() {
+fn test_process_message() {
     let context = Context {
         track: Track::empty(),
     };
@@ -50,6 +50,26 @@ fn test_process_messages() {
     let processed_context = context.process_messages(messages);
     assert_eq!(
         1,
+        processed_context
+            .track
+            .events_between(Measure(1, 4), Measure(4, 4))
+            .len()
+    );
+}
+
+#[test]
+fn test_process_two_messages() {
+    let context = Context {
+        track: Track::empty(),
+    };
+    let messages = vec![
+        Message::NoteOn { note_number: 42 },
+        Message::NoteOn { note_number: 43 },
+    ];
+
+    let processed_context = context.process_messages(messages);
+    assert_eq!(
+        2,
         processed_context
             .track
             .events_between(Measure(1, 4), Measure(4, 4))
