@@ -32,6 +32,14 @@ impl Track {
         }
     }
 
+    pub fn active_steps(&self) -> Vec<Measure> {
+        self.events
+            .clone()
+            .into_iter()
+            .map(|e| e.start)
+            .collect::<Vec<Measure>>()
+    }
+
     fn add_event(&self, event: Event) -> Track {
         let mut events = self.events.clone();
         events.push(event);
@@ -65,6 +73,18 @@ fn test_events_between() {
     let track = Track::empty().toggle_step(Measure(1, 16));
     let events = track.events_between(Measure(1, 32), Measure(2, 32));
     assert_eq!(Measure(1, 16), events[0].start);
+}
+
+#[test]
+fn test_active_steps() {
+    assert_eq!(0, Track::empty().active_steps().len());
+
+    let active_steps = Track::empty()
+        .toggle_step(Measure(1, 16))
+        .toggle_step(Measure(16, 16))
+        .active_steps();
+
+    assert_eq!(active_steps, vec![Measure(1, 16), Measure(16, 16)]);
 }
 
 #[test]
