@@ -3,57 +3,52 @@ use crate::measure::Measure;
 
 #[derive(Debug, Clone)]
 pub struct Track {
-    events: Vec<Event>,
+    steps: Vec<Measure>,
 }
 
 impl Track {
     pub fn empty() -> Track {
-        Track { events: vec![] }
+        Track { steps: vec![] }
     }
 
     pub fn events_between(&self, start: Measure, end: Measure) -> Vec<Event> {
         let start_float = start.reduce_to_one_bar().to_float();
         let end_float = end.reduce_to_one_bar().to_float();
 
-        self.events
+        self.steps
             .clone()
             .into_iter()
+            .map(|s| Event { start: s })
             .filter(|e| e.start.to_float() > start_float && e.start.to_float() <= end_float)
             .collect::<Vec<Event>>()
     }
 
     pub fn toggle_step(&self, measure: Measure) -> Track {
-        let event = Event { start: measure };
-
-        if self.missing(event) {
-            self.add_event(event)
+        if self.missing(measure) {
+            self.add_step(measure)
         } else {
-            self.remove_event(event)
+            self.remove_step(measure)
         }
     }
 
     pub fn active_steps(&self) -> Vec<Measure> {
-        self.events
-            .clone()
-            .into_iter()
-            .map(|e| e.start)
-            .collect::<Vec<Measure>>()
+        self.steps.clone()
     }
 
-    fn add_event(&self, event: Event) -> Track {
-        let mut events = self.events.clone();
-        events.push(event);
-        Track { events: events }
+    fn add_step(&self, step: Measure) -> Track {
+        let mut steps = self.steps.clone();
+        steps.push(step);
+        Track { steps: steps }
     }
 
-    fn remove_event(&self, event: Event) -> Track {
-        let mut events = self.events.clone();
-        events.retain(|e| *e != event);
-        Track { events: events }
+    fn remove_step(&self, step: Measure) -> Track {
+        let mut steps = self.steps.clone();
+        steps.retain(|s| *s != step);
+        Track { steps: steps }
     }
 
-    fn missing(&self, event: Event) -> bool {
-        !self.events.contains(&event)
+    fn missing(&self, step: Measure) -> bool {
+        !self.steps.contains(&step)
     }
 }
 
