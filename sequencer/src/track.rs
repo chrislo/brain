@@ -1,4 +1,3 @@
-use crate::control::Message;
 use crate::event::Event;
 use crate::measure::Measure;
 
@@ -23,31 +22,7 @@ impl Track {
             .collect::<Vec<Event>>()
     }
 
-    pub fn process_messages(&self, messages: Vec<Message>) -> Track {
-        match messages.len() {
-            0 => self.clone(),
-            _ => {
-                let mut this_messages = messages.clone();
-                let first_message = this_messages.remove(0);
-                let mut new_track = self.process_message(&first_message);
-
-                for message in this_messages {
-                    new_track = new_track.process_message(&message);
-                }
-
-                new_track
-            }
-        }
-    }
-
-    fn process_message(&self, message: &Message) -> Track {
-        match message {
-            Message::NoteOn { note_number: n } => self.toggle_step(note_number_to_measure(*n)),
-            _ => self.clone(),
-        }
-    }
-
-    fn toggle_step(&self, measure: Measure) -> Track {
+    pub fn toggle_step(&self, measure: Measure) -> Track {
         let event = Event { start: measure };
 
         if self.missing(event) {
@@ -74,10 +49,6 @@ impl Track {
     }
 }
 
-fn note_number_to_measure(note_number: i32) -> Measure {
-    Measure(note_number - 35, 16)
-}
-
 #[test]
 fn test_events_between() {
     let track = Track::empty().toggle_step(Measure(2, 16));
@@ -97,53 +68,22 @@ fn test_events_between() {
 }
 
 #[test]
-fn test_process_message() {
+fn test_toggle_step() {
     let track = Track::empty();
-    let message = Message::NoteOn { note_number: 43 };
 
-    let processed_track = track.process_message(&message);
+    let processed_track = track.toggle_step(Measure(2, 16));
     assert_eq!(
         1,
         processed_track
-            .events_between(Measure(1, 4), Measure(4, 4))
+            .events_between(Measure(1, 16), Measure(16, 16))
             .len()
     );
-}
 
-#[test]
-fn test_process_messages() {
-    let track = Track::empty();
-    let message1 = Message::NoteOn { note_number: 43 };
-    let message2 = Message::NoteOn { note_number: 47 };
-    let processed_track = track.process_messages(vec![message1, message2]);
-    assert_eq!(
-        2,
-        processed_track
-            .events_between(Measure(1, 4), Measure(4, 4))
-            .len()
-    );
-}
-
-#[test]
-fn test_process_toggle_step_message_to_remove_step() {
-    let track = Track::empty();
-    let message1 = Message::NoteOn { note_number: 43 };
-    let message2 = Message::NoteOn { note_number: 43 };
-    let processed_track = track.process_messages(vec![message1, message2]);
+    let processed_track = processed_track.toggle_step(Measure(2, 16));
     assert_eq!(
         0,
         processed_track
-            .events_between(Measure(1, 4), Measure(4, 4))
+            .events_between(Measure(1, 16), Measure(16, 16))
             .len()
     );
-}
-
-#[test]
-fn test_process_messages_when_empty() {
-    let track1 = Track::empty();
-    let message1 = Message::NoteOn { note_number: 43 };
-    let track2 = track1.process_messages(vec![message1]);
-    let track3 = track2.process_messages(vec![]);
-
-    assert_eq!(1, track3.events_between(Measure(1, 4), Measure(4, 4)).len());
 }

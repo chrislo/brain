@@ -7,6 +7,7 @@ use std::thread;
 use std::time::Instant;
 
 use sequencer::atom;
+use sequencer::context::Context;
 use sequencer::control::parse_incoming_osc_message;
 use sequencer::control::Message;
 use sequencer::measure::Measure;
@@ -22,25 +23,29 @@ fn main() {
         let tick_length = Measure(1, 96);
         let mut current_tick = Measure(1, 96);
 
-        let mut current_track = Track::empty();
+        let mut current_context = Context {
+            track: Track::empty(),
+        };
 
         loop {
             let now = Instant::now();
             let next_tick = current_tick + tick_length;
-            let events = current_track.events_between(current_tick, next_tick);
+            let events = current_context
+                .track
+                .events_between(current_tick, next_tick);
             for event in events {
                 event.send_via_osc();
             }
 
             let messages = r.try_iter().collect();
-            let next_track = current_track.process_messages(messages);
+            let next_context = current_context.process_messages(messages);
 
             let elapsed_time = now.elapsed();
             let sleep_time = tick_length.to_duration(bpm) - elapsed_time;
             thread::sleep(sleep_time);
 
             current_tick = next_tick;
-            current_track = next_track;
+            current_context = next_context;
         }
     });
 
