@@ -1,3 +1,5 @@
+use crate::context::Context;
+use crate::measure::Measure;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::net::{SocketAddrV4, UdpSocket};
@@ -10,6 +12,52 @@ pub fn handshake() {
             rosc::OscType::Int(16),
             rosc::OscType::Int(0),
             rosc::OscType::Int(127),
+        ],
+    }))
+    .unwrap();
+
+    send_osc_to_o2m(packet);
+}
+
+pub fn update(context: &Context) {
+    turn_all_lights_off();
+
+    for step in context.track.active_steps() {
+        turn_light_on(step_to_note_number(step));
+    }
+}
+
+fn step_to_note_number(step: Measure) -> i32 {
+    step.0 + 35
+}
+
+fn turn_all_lights_off() {
+    for n in 36..52 {
+        turn_light_off(n);
+    }
+}
+
+fn turn_light_on(note_number: i32) {
+    let packet = encoder::encode(&OscPacket::Message(OscMessage {
+        addr: "/atom/note_on".to_string(),
+        args: vec![
+            rosc::OscType::Int(1),
+            rosc::OscType::Int(note_number),
+            rosc::OscType::Int(127),
+        ],
+    }))
+    .unwrap();
+
+    send_osc_to_o2m(packet);
+}
+
+fn turn_light_off(note_number: i32) {
+    let packet = encoder::encode(&OscPacket::Message(OscMessage {
+        addr: "/atom/note_on".to_string(),
+        args: vec![
+            rosc::OscType::Int(1),
+            rosc::OscType::Int(note_number),
+            rosc::OscType::Int(0),
         ],
     }))
     .unwrap();

@@ -30,6 +30,7 @@ fn main() {
         loop {
             let now = Instant::now();
             let next_tick = current_tick + tick_length;
+            atom::update(&current_context);
             let events = current_context
                 .track
                 .events_between(current_tick, next_tick);
