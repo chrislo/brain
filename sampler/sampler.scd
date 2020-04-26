@@ -1,5 +1,5 @@
 s.waitForBoot({
-~b1 = Buffer.read(s, "/Users/chrislowis/src/chrislo/rust-sampler/1.wav");
+~b1 = Buffer.read(s, "samples/1.wav");
 
 SynthDef(\sampler, {
         arg obs=0, buf, rate=1, amp=1;
