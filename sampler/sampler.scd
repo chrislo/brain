@@ -1,19 +1,30 @@
 s.waitForBoot({
-~b1 = Buffer.read(s, "/Users/chrislowis/src/chrislo/rust-sampler/1.wav");
+  ~dict = Dictionary.new(n: 16);
 
-SynthDef(\sampler, {
-        arg obs=0, buf, rate=1, amp=1;
-        var sig;
-        sig = PlayBuf.ar(1, buf, rate, \t_tr.kr(1, 0), doneAction: Done.freeSelf);
-        Out.ar(obs, sig);
-}).add;
+  PathName.new("samples/").filesDo { |afile|
+    var buffer;
+    buffer = Buffer.read(s, afile.fullPath);
+    ~dict.put(afile.fileNameWithoutExtension, buffer);
+  };
 
-~handler = {
-        arg msg, time, addr, recvPort;
+  SynthDef(\sampler, {
+    arg obs=0, buf, rate=1, amp=1;
+    var sig;
+    sig = PlayBuf.ar(1, buf, rate, \t_tr.kr(1, 0), doneAction: Done.freeSelf);
+    Out.ar(obs, sig);
+  }).add;
 
-        Synth(\sampler, [\buf, ~b1.bufnum]);
-};
+  ~handler = {
+    arg msg, time, addr, recvPort;
+    var buffer, number;
+    number = msg[1].asString;
 
-n = NetAddr.new("127.0.0.1");
-o = OSCFunc(~handler, '/sampler/1', n, 49162);
+    if (~dict.includesKey(number)) {
+      buffer = ~dict.at(number);
+      Synth(\sampler, [\buf, buffer.bufnum]);
+    };
+  };
+
+  n = NetAddr.new("127.0.0.1");
+  o = OSCFunc(~handler, '/sampler', n, 49162);
 });
