@@ -7,7 +7,7 @@ pub struct Track {
     steps: HashSet<Step>,
 }
 
-#[derive(Clone, Copy, Hash, Eq)]
+#[derive(Clone, Copy, Debug, Hash, Eq)]
 pub struct Step {
     pub measure: Measure,
     pub note_number: i32,
@@ -54,6 +54,12 @@ impl Track {
 
     pub fn active_steps(&self) -> HashSet<Step> {
         self.steps.clone()
+    }
+
+    pub fn active_steps_with_note_number(&self, note_number: i32) -> HashSet<Step> {
+        let mut steps = self.steps.clone();
+        steps.retain(|&s| s.note_number == note_number);
+        steps
     }
 }
 
@@ -154,4 +160,26 @@ fn test_step_equality() {
     assert!(step_1 == step_1);
     assert!(step_1 != step_2);
     assert!(step_1 != step_3);
+}
+
+#[test]
+fn test_active_steps_with_note_number() {
+    assert_eq!(0, Track::empty().active_steps().len());
+
+    let step_1 = Step {
+        measure: Measure(1, 16),
+        note_number: 1,
+    };
+    let step_2 = Step {
+        measure: Measure(16, 16),
+        note_number: 2,
+    };
+    let active_steps = Track::empty()
+        .toggle_step(step_1)
+        .toggle_step(step_2)
+        .active_steps_with_note_number(2);
+
+    assert_eq!(1, active_steps.len());
+    println!("{:?}", active_steps);
+    assert!(active_steps.contains(&step_2));
 }
