@@ -1,5 +1,5 @@
 use crate::context::Context;
-use crate::measure::Measure;
+use crate::track::Step;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::net::{SocketAddrV4, UdpSocket};
@@ -37,8 +37,8 @@ pub fn update(current_context: &Context, next_context: &Context) {
     }
 }
 
-fn step_to_note_number(step: Measure) -> i32 {
-    step.0 + 35
+fn step_to_note_number(step: Step) -> i32 {
+    step.measure.0 + 35
 }
 
 fn turn_all_lights_off() {

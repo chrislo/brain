@@ -4,7 +4,18 @@ use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Track {
-    steps: HashSet<Measure>,
+    steps: HashSet<Step>,
+}
+
+#[derive(Clone, Copy, Hash, Eq)]
+pub struct Step {
+    pub measure: Measure,
+}
+
+impl PartialEq for Step {
+    fn eq(&self, other: &Self) -> bool {
+        self.measure == other.measure
+    }
 }
 
 impl Track {
@@ -21,23 +32,24 @@ impl Track {
         self.steps
             .clone()
             .into_iter()
-            .map(|s| Event { start: s })
+            .map(|s| Event { start: s.measure })
             .filter(|e| e.start.to_float() > start_float && e.start.to_float() <= end_float)
             .collect::<Vec<Event>>()
     }
 
     pub fn toggle_step(&self, measure: Measure) -> Track {
         let mut steps = self.steps.clone();
+        let step = Step { measure: measure };
 
-        if self.steps.contains(&measure) {
-            steps.remove(&measure);
+        if self.steps.contains(&step) {
+            steps.remove(&step);
         } else {
-            steps.insert(measure);
+            steps.insert(step);
         }
         Track { steps: steps }
     }
 
-    pub fn active_steps(&self) -> HashSet<Measure> {
+    pub fn active_steps(&self) -> HashSet<Step> {
         self.steps.clone()
     }
 }
@@ -70,8 +82,12 @@ fn test_active_steps() {
         .active_steps();
 
     assert_eq!(2, active_steps.len());
-    assert!(active_steps.contains(&Measure(1, 16)));
-    assert!(active_steps.contains(&Measure(16, 16)));
+    assert!(active_steps.contains(&Step {
+        measure: Measure(1, 16)
+    }));
+    assert!(active_steps.contains(&Step {
+        measure: Measure(16, 16)
+    }));
 }
 
 #[test]
