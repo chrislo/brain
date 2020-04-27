@@ -25,8 +25,12 @@ pub fn handshake() {
 }
 
 pub fn update(current_context: &Context, next_context: &Context) {
-    let current_context_steps = current_context.track.active_steps();
-    let next_context_steps = next_context.track.active_steps();
+    let current_context_steps = current_context
+        .track
+        .active_steps_with_note_number(current_context.active_note_number);
+    let next_context_steps = next_context
+        .track
+        .active_steps_with_note_number(next_context.active_note_number);
 
     for step_added in next_context_steps.difference(&current_context_steps) {
         turn_light_on(step_to_note_number(*step_added));
