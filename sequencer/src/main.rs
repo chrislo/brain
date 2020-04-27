@@ -63,6 +63,8 @@ fn main() {
                 let message = parse_incoming_osc_message(packet);
                 match message {
                     Message::NoteOn { .. } => s.send(message).unwrap(),
+                    Message::Left { .. } => s.send(message).unwrap(),
+                    Message::Right { .. } => s.send(message).unwrap(),
                     _ => {}
                 }
             }

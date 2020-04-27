@@ -38,6 +38,14 @@ impl Context {
                     active_note_number: self.active_note_number,
                 }
             }
+            Message::Left => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number - 1,
+            },
+            Message::Right => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number + 1,
+            },
             _ => self.clone(),
         }
     }
@@ -51,7 +59,7 @@ fn note_number_to_step(note_number: i32, active_note_number: i32) -> Step {
 }
 
 #[test]
-fn test_process_message() {
+fn test_process_note_on_message() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 2,
@@ -66,6 +74,32 @@ fn test_process_message() {
 
     assert_eq!(Measure(8, 16), event.start);
     assert_eq!(2, event.note_number);
+}
+
+#[test]
+fn test_process_left_message() {
+    let context = Context {
+        track: Track::empty(),
+        active_note_number: 1,
+    };
+
+    let processed_context = context.process_messages(vec![Message::Left]);
+    assert_eq!(0, processed_context.active_note_number);
+
+    // We don't allow the number to go below zero
+    let processed_context = context.process_messages(vec![Message::Left]);
+    assert_eq!(0, processed_context.active_note_number);
+}
+
+#[test]
+fn test_process_right_message() {
+    let context = Context {
+        track: Track::empty(),
+        active_note_number: 1,
+    };
+
+    let processed_context = context.process_messages(vec![Message::Right]);
+    assert_eq!(2, processed_context.active_note_number);
 }
 
 #[test]
