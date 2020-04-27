@@ -1,5 +1,6 @@
 use crate::control::Message;
 use crate::measure::Measure;
+use crate::track::Step;
 use crate::track::Track;
 
 #[derive(Clone)]
@@ -28,7 +29,7 @@ impl Context {
     fn process_message(&self, message: &Message) -> Context {
         match message {
             Message::NoteOn { note_number: n } => {
-                let new_track = self.track.toggle_step(note_number_to_measure(*n));
+                let new_track = self.track.toggle_step(note_number_to_step(*n));
                 Context { track: new_track }
             }
             _ => self.clone(),
@@ -36,8 +37,10 @@ impl Context {
     }
 }
 
-fn note_number_to_measure(note_number: i32) -> Measure {
-    Measure(note_number - 35, 16)
+fn note_number_to_step(note_number: i32) -> Step {
+    Step {
+        measure: Measure(note_number - 35, 16),
+    }
 }
 
 #[test]

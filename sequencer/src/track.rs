@@ -37,9 +37,8 @@ impl Track {
             .collect::<Vec<Event>>()
     }
 
-    pub fn toggle_step(&self, measure: Measure) -> Track {
+    pub fn toggle_step(&self, step: Step) -> Track {
         let mut steps = self.steps.clone();
-        let step = Step { measure: measure };
 
         if self.steps.contains(&step) {
             steps.remove(&step);
@@ -56,7 +55,9 @@ impl Track {
 
 #[test]
 fn test_events_between() {
-    let track = Track::empty().toggle_step(Measure(2, 16));
+    let track = Track::empty().toggle_step(Step {
+        measure: Measure(2, 16),
+    });
 
     let events = track.events_between(Measure(1, 16), Measure(3, 16));
     assert_eq!(Measure(2, 16), events[0].start);
@@ -67,7 +68,9 @@ fn test_events_between() {
     let events = track.events_between(Measure(17, 16), Measure(19, 16));
     assert_eq!(Measure(2, 16), events[0].start);
 
-    let track = Track::empty().toggle_step(Measure(1, 16));
+    let track = Track::empty().toggle_step(Step {
+        measure: Measure(1, 16),
+    });
     let events = track.events_between(Measure(1, 32), Measure(2, 32));
     assert_eq!(Measure(1, 16), events[0].start);
 }
@@ -76,25 +79,29 @@ fn test_events_between() {
 fn test_active_steps() {
     assert_eq!(0, Track::empty().active_steps().len());
 
+    let step_1 = Step {
+        measure: Measure(1, 16),
+    };
+    let step_2 = Step {
+        measure: Measure(16, 16),
+    };
     let active_steps = Track::empty()
-        .toggle_step(Measure(1, 16))
-        .toggle_step(Measure(16, 16))
+        .toggle_step(step_1)
+        .toggle_step(step_2)
         .active_steps();
 
     assert_eq!(2, active_steps.len());
-    assert!(active_steps.contains(&Step {
-        measure: Measure(1, 16)
-    }));
-    assert!(active_steps.contains(&Step {
-        measure: Measure(16, 16)
-    }));
+    assert!(active_steps.contains(&step_1));
+    assert!(active_steps.contains(&step_2));
 }
 
 #[test]
 fn test_toggle_step() {
     let track = Track::empty();
 
-    let processed_track = track.toggle_step(Measure(2, 16));
+    let processed_track = track.toggle_step(Step {
+        measure: Measure(2, 16),
+    });
     assert_eq!(
         1,
         processed_track
@@ -102,7 +109,9 @@ fn test_toggle_step() {
             .len()
     );
 
-    let processed_track = processed_track.toggle_step(Measure(2, 16));
+    let processed_track = processed_track.toggle_step(Step {
+        measure: Measure(2, 16),
+    });
     assert_eq!(
         0,
         processed_track
