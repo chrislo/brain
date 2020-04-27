@@ -33,7 +33,10 @@ impl Track {
         self.steps
             .clone()
             .into_iter()
-            .map(|s| Event { start: s.measure })
+            .map(|s| Event {
+                start: s.measure,
+                note_number: s.note_number,
+            })
             .filter(|e| e.start.to_float() > start_float && e.start.to_float() <= end_float)
             .collect::<Vec<Event>>()
     }

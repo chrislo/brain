@@ -7,6 +7,7 @@ use std::str::FromStr;
 #[derive(Clone, Copy, Debug)]
 pub struct Event {
     pub start: Measure,
+    pub note_number: i32,
 }
 
 impl Event {
@@ -20,7 +21,7 @@ impl Event {
     fn to_osc_message(&self) -> Vec<u8> {
         encoder::encode(&OscPacket::Message(OscMessage {
             addr: "/sampler".to_string(),
-            args: vec![rosc::OscType::Int(1)],
+            args: vec![rosc::OscType::Int(self.note_number)],
         }))
         .unwrap()
     }
@@ -28,6 +29,6 @@ impl Event {
 
 impl PartialEq for Event {
     fn eq(&self, other: &Self) -> bool {
-        self.start == other.start
+        self.start == other.start && self.note_number == self.note_number
     }
 }
