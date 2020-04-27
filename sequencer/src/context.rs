@@ -40,6 +40,7 @@ impl Context {
 fn note_number_to_step(note_number: i32) -> Step {
     Step {
         measure: Measure(note_number - 35, 16),
+        note_number: 1,
     }
 }
 
