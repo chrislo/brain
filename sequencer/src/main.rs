@@ -25,6 +25,7 @@ fn main() {
 
         let mut current_context = Context {
             track: Track::empty(),
+            active_note_number: 1,
         };
 
         loop {
@@ -62,6 +63,8 @@ fn main() {
                 let message = parse_incoming_osc_message(packet);
                 match message {
                     Message::NoteOn { .. } => s.send(message).unwrap(),
+                    Message::Left { .. } => s.send(message).unwrap(),
+                    Message::Right { .. } => s.send(message).unwrap(),
                     _ => {}
                 }
             }

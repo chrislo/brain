@@ -1,7 +1,8 @@
 use crate::context::Context;
-use crate::measure::Measure;
+use crate::track::Step;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
+use std::collections::HashSet;
 use std::net::{SocketAddrV4, UdpSocket};
 use std::str::FromStr;
 
@@ -25,20 +26,30 @@ pub fn handshake() {
 }
 
 pub fn update(current_context: &Context, next_context: &Context) {
-    let current_context_steps = current_context.track.active_steps();
-    let next_context_steps = next_context.track.active_steps();
+    let current_context_note_numbers: HashSet<i32> = current_context
+        .track
+        .active_steps_with_note_number(current_context.active_note_number)
+        .iter()
+        .map(|s| step_to_note_number(*s))
+        .collect();
+    let next_context_note_numbers: HashSet<i32> = next_context
+        .track
+        .active_steps_with_note_number(next_context.active_note_number)
+        .iter()
+        .map(|s| step_to_note_number(*s))
+        .collect();
 
-    for step_added in next_context_steps.difference(&current_context_steps) {
-        turn_light_on(step_to_note_number(*step_added));
+    for note_added in next_context_note_numbers.difference(&current_context_note_numbers) {
+        turn_light_on(*note_added);
     }
 
-    for step_removed in current_context_steps.difference(&next_context_steps) {
-        turn_light_off(step_to_note_number(*step_removed));
+    for note_removed in current_context_note_numbers.difference(&next_context_note_numbers) {
+        turn_light_off(*note_removed);
     }
 }
 
-fn step_to_note_number(step: Measure) -> i32 {
-    step.0 + 35
+fn step_to_note_number(step: Step) -> i32 {
+    step.measure.0 + 35
 }
 
 fn turn_all_lights_off() {

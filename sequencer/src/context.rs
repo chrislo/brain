@@ -1,10 +1,12 @@
 use crate::control::Message;
 use crate::measure::Measure;
+use crate::track::Step;
 use crate::track::Track;
 
 #[derive(Clone)]
 pub struct Context {
     pub track: Track,
+    pub active_note_number: i32,
 }
 
 impl Context {
@@ -28,39 +30,83 @@ impl Context {
     fn process_message(&self, message: &Message) -> Context {
         match message {
             Message::NoteOn { note_number: n } => {
-                let new_track = self.track.toggle_step(note_number_to_measure(*n));
-                Context { track: new_track }
+                let new_track = self
+                    .track
+                    .toggle_step(note_number_to_step(*n, self.active_note_number));
+                Context {
+                    track: new_track,
+                    active_note_number: self.active_note_number,
+                }
             }
+            Message::Left => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number - 1,
+            },
+            Message::Right => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number + 1,
+            },
             _ => self.clone(),
         }
     }
 }
 
-fn note_number_to_measure(note_number: i32) -> Measure {
-    Measure(note_number - 35, 16)
+fn note_number_to_step(note_number: i32, active_note_number: i32) -> Step {
+    Step {
+        measure: Measure(note_number - 35, 16),
+        note_number: active_note_number,
+    }
 }
 
 #[test]
-fn test_process_message() {
+fn test_process_note_on_message() {
     let context = Context {
         track: Track::empty(),
+        active_note_number: 2,
     };
     let messages = vec![Message::NoteOn { note_number: 43 }];
 
     let processed_context = context.process_messages(messages);
-    assert_eq!(
-        1,
-        processed_context
-            .track
-            .events_between(Measure(1, 4), Measure(4, 4))
-            .len()
-    );
+
+    let event = processed_context
+        .track
+        .events_between(Measure(1, 4), Measure(4, 4))[0];
+
+    assert_eq!(Measure(8, 16), event.start);
+    assert_eq!(2, event.note_number);
+}
+
+#[test]
+fn test_process_left_message() {
+    let context = Context {
+        track: Track::empty(),
+        active_note_number: 1,
+    };
+
+    let processed_context = context.process_messages(vec![Message::Left]);
+    assert_eq!(0, processed_context.active_note_number);
+
+    // We don't allow the number to go below zero
+    let processed_context = context.process_messages(vec![Message::Left]);
+    assert_eq!(0, processed_context.active_note_number);
+}
+
+#[test]
+fn test_process_right_message() {
+    let context = Context {
+        track: Track::empty(),
+        active_note_number: 1,
+    };
+
+    let processed_context = context.process_messages(vec![Message::Right]);
+    assert_eq!(2, processed_context.active_note_number);
 }
 
 #[test]
 fn test_process_two_messages() {
     let context = Context {
         track: Track::empty(),
+        active_note_number: 1,
     };
     let messages = vec![
         Message::NoteOn { note_number: 42 },
@@ -68,6 +114,7 @@ fn test_process_two_messages() {
     ];
 
     let processed_context = context.process_messages(messages);
+
     assert_eq!(
         2,
         processed_context

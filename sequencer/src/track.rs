@@ -4,7 +4,19 @@ use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Track {
-    steps: HashSet<Measure>,
+    steps: HashSet<Step>,
+}
+
+#[derive(Clone, Copy, Debug, Hash, Eq)]
+pub struct Step {
+    pub measure: Measure,
+    pub note_number: i32,
+}
+
+impl PartialEq for Step {
+    fn eq(&self, other: &Self) -> bool {
+        self.measure == other.measure && self.note_number == other.note_number
+    }
 }
 
 impl Track {
@@ -21,30 +33,42 @@ impl Track {
         self.steps
             .clone()
             .into_iter()
-            .map(|s| Event { start: s })
+            .map(|s| Event {
+                start: s.measure,
+                note_number: s.note_number,
+            })
             .filter(|e| e.start.to_float() > start_float && e.start.to_float() <= end_float)
             .collect::<Vec<Event>>()
     }
 
-    pub fn toggle_step(&self, measure: Measure) -> Track {
+    pub fn toggle_step(&self, step: Step) -> Track {
         let mut steps = self.steps.clone();
 
-        if self.steps.contains(&measure) {
-            steps.remove(&measure);
+        if self.steps.contains(&step) {
+            steps.remove(&step);
         } else {
-            steps.insert(measure);
+            steps.insert(step);
         }
         Track { steps: steps }
     }
 
-    pub fn active_steps(&self) -> HashSet<Measure> {
+    pub fn active_steps(&self) -> HashSet<Step> {
         self.steps.clone()
+    }
+
+    pub fn active_steps_with_note_number(&self, note_number: i32) -> HashSet<Step> {
+        let mut steps = self.steps.clone();
+        steps.retain(|&s| s.note_number == note_number);
+        steps
     }
 }
 
 #[test]
 fn test_events_between() {
-    let track = Track::empty().toggle_step(Measure(2, 16));
+    let track = Track::empty().toggle_step(Step {
+        measure: Measure(2, 16),
+        note_number: 1,
+    });
 
     let events = track.events_between(Measure(1, 16), Measure(3, 16));
     assert_eq!(Measure(2, 16), events[0].start);
@@ -55,7 +79,10 @@ fn test_events_between() {
     let events = track.events_between(Measure(17, 16), Measure(19, 16));
     assert_eq!(Measure(2, 16), events[0].start);
 
-    let track = Track::empty().toggle_step(Measure(1, 16));
+    let track = Track::empty().toggle_step(Step {
+        measure: Measure(1, 16),
+        note_number: 1,
+    });
     let events = track.events_between(Measure(1, 32), Measure(2, 32));
     assert_eq!(Measure(1, 16), events[0].start);
 }
@@ -64,33 +91,95 @@ fn test_events_between() {
 fn test_active_steps() {
     assert_eq!(0, Track::empty().active_steps().len());
 
+    let step_1 = Step {
+        measure: Measure(1, 16),
+        note_number: 1,
+    };
+    let step_2 = Step {
+        measure: Measure(16, 16),
+        note_number: 1,
+    };
     let active_steps = Track::empty()
-        .toggle_step(Measure(1, 16))
-        .toggle_step(Measure(16, 16))
+        .toggle_step(step_1)
+        .toggle_step(step_2)
         .active_steps();
 
     assert_eq!(2, active_steps.len());
-    assert!(active_steps.contains(&Measure(1, 16)));
-    assert!(active_steps.contains(&Measure(16, 16)));
+    assert!(active_steps.contains(&step_1));
+    assert!(active_steps.contains(&step_2));
 }
 
 #[test]
 fn test_toggle_step() {
     let track = Track::empty();
 
-    let processed_track = track.toggle_step(Measure(2, 16));
-    assert_eq!(
-        1,
-        processed_track
-            .events_between(Measure(1, 16), Measure(16, 16))
-            .len()
-    );
+    let processed_track = track.toggle_step(Step {
+        measure: Measure(2, 16),
+        note_number: 1,
+    });
+    assert_eq!(1, processed_track.active_steps().len());
 
-    let processed_track = processed_track.toggle_step(Measure(2, 16));
-    assert_eq!(
-        0,
-        processed_track
-            .events_between(Measure(1, 16), Measure(16, 16))
-            .len()
-    );
+    let processed_track = processed_track.toggle_step(Step {
+        measure: Measure(2, 16),
+        note_number: 1,
+    });
+    assert_eq!(0, processed_track.active_steps().len());
+}
+
+#[test]
+fn test_toggle_step_with_different_note_numbers() {
+    let track = Track::empty();
+
+    let processed_track = track.toggle_step(Step {
+        measure: Measure(2, 16),
+        note_number: 1,
+    });
+    assert_eq!(1, processed_track.active_steps().len());
+
+    let processed_track = processed_track.toggle_step(Step {
+        measure: Measure(2, 16),
+        note_number: 2,
+    });
+    assert_eq!(2, processed_track.active_steps().len());
+}
+
+#[test]
+fn test_step_equality() {
+    let step_1 = Step {
+        measure: Measure(1, 16),
+        note_number: 1,
+    };
+    let step_2 = Step {
+        measure: Measure(1, 16),
+        note_number: 2,
+    };
+    let step_3 = Step {
+        measure: Measure(2, 16),
+        note_number: 1,
+    };
+    assert!(step_1 == step_1);
+    assert!(step_1 != step_2);
+    assert!(step_1 != step_3);
+}
+
+#[test]
+fn test_active_steps_with_note_number() {
+    assert_eq!(0, Track::empty().active_steps().len());
+
+    let step_1 = Step {
+        measure: Measure(1, 16),
+        note_number: 1,
+    };
+    let step_2 = Step {
+        measure: Measure(16, 16),
+        note_number: 2,
+    };
+    let active_steps = Track::empty()
+        .toggle_step(step_1)
+        .toggle_step(step_2)
+        .active_steps_with_note_number(2);
+
+    assert_eq!(1, active_steps.len());
+    println!("{:?}", active_steps);
+    assert!(active_steps.contains(&step_2));
 }
