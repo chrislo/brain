@@ -180,6 +180,5 @@ fn test_active_steps_with_note_number() {
         .active_steps_with_note_number(2);
 
     assert_eq!(1, active_steps.len());
-    println!("{:?}", active_steps);
     assert!(active_steps.contains(&step_2));
 }
