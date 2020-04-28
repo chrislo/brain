@@ -26,26 +26,25 @@ pub fn handshake() {
 }
 
 pub fn update(current_context: &Context, next_context: &Context) {
-    let current_context_note_numbers: HashSet<i32> = current_context
-        .track
-        .active_steps_with_note_number(current_context.active_note_number)
-        .iter()
-        .map(|s| step_to_note_number(*s))
-        .collect();
-    let next_context_note_numbers: HashSet<i32> = next_context
-        .track
-        .active_steps_with_note_number(next_context.active_note_number)
-        .iter()
-        .map(|s| step_to_note_number(*s))
-        .collect();
+    let current_context_active_pads = active_pads(current_context);
+    let next_context_active_pads = active_pads(next_context);
 
-    for note_added in next_context_note_numbers.difference(&current_context_note_numbers) {
-        turn_light_on(*note_added);
+    for pad_added in next_context_active_pads.difference(&current_context_active_pads) {
+        turn_light_on(*pad_added);
     }
 
-    for note_removed in current_context_note_numbers.difference(&next_context_note_numbers) {
-        turn_light_off(*note_removed);
+    for pad_removed in current_context_active_pads.difference(&next_context_active_pads) {
+        turn_light_off(*pad_removed);
     }
+}
+
+fn active_pads(context: &Context) -> HashSet<i32> {
+    context
+        .track
+        .active_steps_with_note_number(context.active_note_number)
+        .iter()
+        .map(|s| step_to_note_number(*s))
+        .collect()
 }
 
 fn step_to_note_number(step: Step) -> i32 {
@@ -91,4 +90,29 @@ fn send_osc_to_o2m(packet: Vec<u8>) {
     let to_addr = SocketAddrV4::from_str("127.0.0.1:57200").unwrap();
 
     sock.send_to(&packet, to_addr).unwrap();
+}
+
+#[cfg(test)]
+use crate::control::Message;
+
+#[cfg(test)]
+use crate::track::Track;
+
+#[test]
+fn test_active_pads() {
+    let context = Context {
+        track: Track::empty(),
+        active_note_number: 1,
+    };
+
+    let messages = vec![Message::NoteOn { note_number: 37 }];
+    let mut processed_context = context.process_messages(messages);
+
+    assert_eq!(1, active_pads(&processed_context).len());
+    assert!(active_pads(&processed_context).contains(&37));
+
+    // active_note_number was 1 when steps added, so no pads active
+    // when we increment the active_note_number
+    processed_context.active_note_number = 2;
+    assert_eq!(0, active_pads(&processed_context).len());
 }
