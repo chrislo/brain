@@ -3,7 +3,7 @@ use crate::measure::Measure;
 use crate::track::Step;
 use crate::track::Track;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Context {
     pub track: Track,
     pub active_note_number: i32,

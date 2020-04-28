@@ -2,7 +2,7 @@ use crate::event::Event;
 use crate::measure::Measure;
 use std::collections::HashSet;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Track {
     steps: HashSet<Step>,
 }
