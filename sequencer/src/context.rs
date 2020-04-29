@@ -1,4 +1,5 @@
 use crate::control::Message;
+use crate::event::Event;
 use crate::measure::Measure;
 use crate::track::Step;
 use crate::track::Track;
@@ -25,6 +26,10 @@ impl Context {
                 new_context
             }
         }
+    }
+
+    pub fn events(&self, current_tick: Measure, next_tick: Measure) -> Vec<Event> {
+        self.track.events_between(current_tick, next_tick)
     }
 
     fn process_message(&self, message: &Message) -> Context {
@@ -56,6 +61,24 @@ fn note_number_to_step(note_number: i32, active_note_number: i32) -> Step {
         measure: Measure(note_number - 35, 16),
         note_number: active_note_number,
     }
+}
+
+#[test]
+fn test_events() {
+    let step = Step {
+        measure: Measure(2, 16),
+        note_number: 1,
+    };
+    let track = Track::empty().toggle_step(step);
+
+    let context = Context {
+        track: track,
+        active_note_number: 1,
+    };
+
+    let events = context.events(Measure(1, 16), Measure(4, 16));
+    assert_eq!(1, events.len());
+    assert_eq!(Measure(2, 16), events[0].start);
 }
 
 #[test]
