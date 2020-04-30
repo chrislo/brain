@@ -1,4 +1,3 @@
-use crate::measure::Measure;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::net::{SocketAddrV4, UdpSocket};
@@ -6,7 +5,6 @@ use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Event {
-    pub start: Measure,
     pub note_number: i32,
 }
 

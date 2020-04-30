@@ -35,7 +35,6 @@ impl Track {
             .into_iter()
             .filter(|s| offset_into_track == (s.measure.0 * 6)) // FIXME: move this conversion from measure to tick offset somewhere else
             .map(|s| Event {
-                start: tick,
                 note_number: s.note_number,
             })
             .collect()

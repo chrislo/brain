@@ -70,7 +70,7 @@ fn test_events() {
 
     let events = context.events(Measure(12, 96));
     assert_eq!(1, events.len());
-    assert_eq!(Measure(12, 96), events[0].start);
+    assert_eq!(1, events[0].note_number);
 }
 
 #[test]
