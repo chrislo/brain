@@ -27,8 +27,8 @@ impl Context {
         }
     }
 
-    pub fn events(&self, current_tick: Measure) -> Vec<Event> {
-        self.track.events_for_tick(current_tick)
+    pub fn events(&self, tick_number: i32) -> Vec<Event> {
+        self.track.events_for_tick(Measure(tick_number, 96))
     }
 
     fn process_message(&self, message: &Message) -> Context {
