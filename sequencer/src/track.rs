@@ -41,6 +41,21 @@ impl Track {
             .collect::<Vec<Event>>()
     }
 
+    pub fn events_for_tick(&self, tick: Measure) -> Vec<Event> {
+        let track_length_in_ticks = 96;
+        let offset_into_track = tick.0 % track_length_in_ticks;
+
+        self.steps
+            .clone()
+            .into_iter()
+            .filter(|s| offset_into_track == (s.measure.0 * 6)) // FIXME: move this conversion from measure to tick offset somewhere else
+            .map(|s| Event {
+                start: tick,
+                note_number: s.note_number,
+            })
+            .collect()
+    }
+
     pub fn toggle_sixteenth(&self, sixteenth: i32, note_number: i32) -> Track {
         let step = Step {
             measure: Measure(sixteenth, 16),
@@ -83,6 +98,30 @@ fn test_events_between() {
     let track = Track::empty().toggle_sixteenth(1, 1);
     let events = track.events_between(Measure(1, 32), Measure(2, 32));
     assert_eq!(Measure(1, 16), events[0].start);
+}
+
+#[test]
+fn test_events_for_tick() {
+    let track = Track::empty().toggle_sixteenth(2, 1);
+
+    // if we toggle the 2nd sixteenth note (at tick 12 offset into the
+    // 1-bar pattern), over 2 bars we'd expect it to fire an event on
+    // the 12th tick and the 108th tick and nowhere else
+    for n in 1..192 {
+        let events = track.events_for_tick(Measure(n, 96));
+        if n == 12 {
+            assert_eq!(1, events.len());
+        } else if n == 108 {
+            assert_eq!(1, events.len());
+        } else {
+            println!("{}", n);
+            assert!(events.is_empty());
+        }
+    }
+
+    let track = Track::empty().toggle_sixteenth(2, 1).toggle_sixteenth(2, 2);
+    let events = track.events_for_tick(Measure(12, 96));
+    assert_eq!(2, events.len());
 }
 
 #[test]
