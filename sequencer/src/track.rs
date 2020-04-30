@@ -56,10 +56,10 @@ impl Track {
         self.steps.clone()
     }
 
-    pub fn active_steps_with_note_number(&self, note_number: i32) -> HashSet<Step> {
+    pub fn active_sixteenths_with_note_number(&self, note_number: i32) -> HashSet<i32> {
         let mut steps = self.steps.clone();
         steps.retain(|&s| s.note_number == note_number);
-        steps
+        steps.into_iter().map(|s| s.measure.0).collect()
     }
 }
 
@@ -163,7 +163,7 @@ fn test_step_equality() {
 }
 
 #[test]
-fn test_active_steps_with_note_number() {
+fn test_active_sixteenths_with_note_number() {
     assert_eq!(0, Track::empty().active_steps().len());
 
     let step_1 = Step {
@@ -174,11 +174,11 @@ fn test_active_steps_with_note_number() {
         measure: Measure(16, 16),
         note_number: 2,
     };
-    let active_steps = Track::empty()
+    let active_sixteenths = Track::empty()
         .toggle_step(step_1)
         .toggle_step(step_2)
-        .active_steps_with_note_number(2);
+        .active_sixteenths_with_note_number(2);
 
-    assert_eq!(1, active_steps.len());
-    assert!(active_steps.contains(&step_2));
+    assert_eq!(1, active_sixteenths.len());
+    assert!(active_sixteenths.contains(&16));
 }

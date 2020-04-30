@@ -1,5 +1,4 @@
 use crate::context::Context;
-use crate::track::Step;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::collections::HashSet;
@@ -41,14 +40,14 @@ pub fn update(current_context: &Context, next_context: &Context) {
 fn active_pads(context: &Context) -> HashSet<i32> {
     context
         .track
-        .active_steps_with_note_number(context.active_note_number)
+        .active_sixteenths_with_note_number(context.active_note_number)
         .iter()
-        .map(|s| step_to_note_number(*s))
+        .map(|s| sixteenth_to_note_number(*s))
         .collect()
 }
 
-fn step_to_note_number(step: Step) -> i32 {
-    step.measure.0 + 35
+fn sixteenth_to_note_number(sixteenth: i32) -> i32 {
+    sixteenth + 35
 }
 
 fn turn_all_lights_off() {
