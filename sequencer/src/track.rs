@@ -8,9 +8,9 @@ pub struct Track {
 }
 
 #[derive(Clone, Copy, Debug, Hash, Eq)]
-pub struct Step {
-    pub measure: Measure,
-    pub note_number: i32,
+struct Step {
+    measure: Measure,
+    note_number: i32,
 }
 
 impl PartialEq for Step {
