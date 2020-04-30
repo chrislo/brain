@@ -10,8 +10,8 @@ use sequencer::atom;
 use sequencer::context::Context;
 use sequencer::control::parse_incoming_osc_message;
 use sequencer::control::Message;
-use sequencer::measure::Measure;
 use sequencer::track::Track;
+use std::time::Duration;
 
 fn main() {
     atom::init();
@@ -20,7 +20,6 @@ fn main() {
 
     let event_thread = thread::spawn(move || {
         let bpm = 120.0;
-        let tick_length = Measure(1, 96);
         let mut current_tick_number = 0;
 
         let mut current_context = Context {
@@ -43,7 +42,7 @@ fn main() {
             atom::update(&current_context, &next_context);
 
             let elapsed_time = now.elapsed();
-            let sleep_time = tick_length.to_duration(bpm) - elapsed_time;
+            let sleep_time = tick_duration(bpm) - elapsed_time;
             thread::sleep(sleep_time);
 
             current_tick_number = next_tick_number;
@@ -74,4 +73,12 @@ fn main() {
     }
 
     event_thread.join().unwrap();
+}
+
+fn tick_duration(bpm: f32) -> Duration {
+    let ms_per_beat = (60. / bpm) * 1000.;
+    let length_of_measure_in_beats = 4. / 96 as f32;
+    let length_of_measure_in_ms = (length_of_measure_in_beats * ms_per_beat) as u64;
+
+    Duration::from_millis(length_of_measure_in_ms)
 }
