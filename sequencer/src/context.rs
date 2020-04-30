@@ -27,8 +27,8 @@ impl Context {
         }
     }
 
-    pub fn events(&self, current_tick: Measure, next_tick: Measure) -> Vec<Event> {
-        self.track.events_between(current_tick, next_tick)
+    pub fn events(&self, current_tick: Measure) -> Vec<Event> {
+        self.track.events_for_tick(current_tick)
     }
 
     fn process_message(&self, message: &Message) -> Context {
@@ -68,9 +68,9 @@ fn test_events() {
         active_note_number: 1,
     };
 
-    let events = context.events(Measure(1, 16), Measure(4, 16));
+    let events = context.events(Measure(12, 96));
     assert_eq!(1, events.len());
-    assert_eq!(Measure(2, 16), events[0].start);
+    assert_eq!(Measure(12, 96), events[0].start);
 }
 
 #[test]
@@ -83,12 +83,10 @@ fn test_process_note_on_message() {
 
     let processed_context = context.process_messages(messages);
 
-    let event = processed_context
+    let active_sixteenths = processed_context
         .track
-        .events_between(Measure(1, 4), Measure(4, 4))[0];
-
-    assert_eq!(Measure(8, 16), event.start);
-    assert_eq!(2, event.note_number);
+        .active_sixteenths_with_note_number(2);
+    assert_eq!(1, active_sixteenths.len());
 }
 
 #[test]
@@ -134,7 +132,7 @@ fn test_process_two_messages() {
         2,
         processed_context
             .track
-            .events_between(Measure(1, 4), Measure(4, 4))
+            .active_sixteenths_with_note_number(1)
             .len()
     );
 }

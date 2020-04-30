@@ -26,21 +26,6 @@ impl Track {
         }
     }
 
-    pub fn events_between(&self, start: Measure, end: Measure) -> Vec<Event> {
-        let start_float = start.reduce_to_one_bar().to_float();
-        let end_float = end.reduce_to_one_bar().to_float();
-
-        self.steps
-            .clone()
-            .into_iter()
-            .map(|s| Event {
-                start: s.measure,
-                note_number: s.note_number,
-            })
-            .filter(|e| e.start.to_float() > start_float && e.start.to_float() <= end_float)
-            .collect::<Vec<Event>>()
-    }
-
     pub fn events_for_tick(&self, tick: Measure) -> Vec<Event> {
         let track_length_in_ticks = 96;
         let offset_into_track = tick.0 % track_length_in_ticks;
@@ -80,24 +65,6 @@ impl Track {
         steps.retain(|&s| s.note_number == note_number);
         steps.into_iter().map(|s| s.measure.0).collect()
     }
-}
-
-#[test]
-fn test_events_between() {
-    let track = Track::empty().toggle_sixteenth(2, 1);
-
-    let events = track.events_between(Measure(1, 16), Measure(3, 16));
-    assert_eq!(Measure(2, 16), events[0].start);
-
-    let events = track.events_between(Measure(3, 16), Measure(4, 16));
-    assert!(events.is_empty());
-
-    let events = track.events_between(Measure(17, 16), Measure(19, 16));
-    assert_eq!(Measure(2, 16), events[0].start);
-
-    let track = Track::empty().toggle_sixteenth(1, 1);
-    let events = track.events_between(Measure(1, 32), Measure(2, 32));
-    assert_eq!(Measure(1, 16), events[0].start);
 }
 
 #[test]

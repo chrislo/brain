@@ -32,7 +32,7 @@ fn main() {
             let now = Instant::now();
             let next_tick = current_tick + tick_length;
 
-            let events = current_context.events(current_tick, next_tick);
+            let events = current_context.events(current_tick);
             for event in events {
                 event.send_via_osc();
             }
