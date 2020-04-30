@@ -1,6 +1,5 @@
 use crate::control::Message;
 use crate::event::Event;
-use crate::measure::Measure;
 use crate::track::Track;
 
 #[derive(Debug, Clone)]
@@ -28,7 +27,7 @@ impl Context {
     }
 
     pub fn events(&self, tick_number: i32) -> Vec<Event> {
-        self.track.events_for_tick(Measure(tick_number, 96))
+        self.track.events_for_tick(tick_number)
     }
 
     fn process_message(&self, message: &Message) -> Context {

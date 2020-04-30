@@ -26,9 +26,9 @@ impl Track {
         }
     }
 
-    pub fn events_for_tick(&self, tick: Measure) -> Vec<Event> {
+    pub fn events_for_tick(&self, tick: i32) -> Vec<Event> {
         let track_length_in_ticks = 96;
-        let offset_into_track = tick.0 % track_length_in_ticks;
+        let offset_into_track = tick % track_length_in_ticks;
 
         self.steps
             .clone()
@@ -75,7 +75,7 @@ fn test_events_for_tick() {
         .toggle_sixteenth(13, 1);
 
     for n in 0..96 {
-        let events = track.events_for_tick(Measure(n, 96));
+        let events = track.events_for_tick(n);
         if n == 0 {
             assert_eq!(1, events.len());
         } else if n == 24 {
@@ -92,7 +92,7 @@ fn test_events_for_tick() {
     }
 
     let track = Track::empty().toggle_sixteenth(1, 1).toggle_sixteenth(1, 2);
-    let events = track.events_for_tick(Measure(0, 96));
+    let events = track.events_for_tick(0);
     assert_eq!(2, events.len());
 }
 
