@@ -42,7 +42,7 @@ impl Track {
 
     pub fn toggle_sixteenth(&self, sixteenth: i32, note_number: i32) -> Track {
         let step = Step {
-            measure: Measure(sixteenth, 16),
+            measure: Measure(sixteenth - 1, 16),
             note_number: note_number,
         };
         self.toggle_step(step)
@@ -68,25 +68,31 @@ impl Track {
 
 #[test]
 fn test_events_for_tick() {
-    let track = Track::empty().toggle_sixteenth(2, 1);
+    let track = Track::empty()
+        .toggle_sixteenth(1, 1)
+        .toggle_sixteenth(5, 1)
+        .toggle_sixteenth(9, 1)
+        .toggle_sixteenth(13, 1);
 
-    // if we toggle the 2nd sixteenth note (at tick 12 offset into the
-    // 1-bar pattern), over 2 bars we'd expect it to fire an event on
-    // the 12th tick and the 108th tick and nowhere else
-    for n in 1..192 {
+    for n in 0..96 {
         let events = track.events_for_tick(Measure(n, 96));
-        if n == 12 {
+        if n == 0 {
             assert_eq!(1, events.len());
-        } else if n == 108 {
+        } else if n == 24 {
+            assert_eq!(1, events.len());
+        } else if n == 48 {
+            assert_eq!(1, events.len());
+        } else if n == 72 {
+            assert_eq!(1, events.len());
+        } else if n == 96 {
             assert_eq!(1, events.len());
         } else {
-            println!("{}", n);
             assert!(events.is_empty());
         }
     }
 
-    let track = Track::empty().toggle_sixteenth(2, 1).toggle_sixteenth(2, 2);
-    let events = track.events_for_tick(Measure(12, 96));
+    let track = Track::empty().toggle_sixteenth(1, 1).toggle_sixteenth(1, 2);
+    let events = track.events_for_tick(Measure(0, 96));
     assert_eq!(2, events.len());
 }
 

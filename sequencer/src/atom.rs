@@ -47,7 +47,7 @@ fn active_pads(context: &Context) -> HashSet<i32> {
 }
 
 fn sixteenth_to_note_number(sixteenth: i32) -> i32 {
-    sixteenth + 35
+    sixteenth + 36
 }
 
 fn turn_all_lights_off() {

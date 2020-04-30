@@ -68,7 +68,7 @@ fn test_events() {
         active_note_number: 1,
     };
 
-    let events = context.events(Measure(12, 96));
+    let events = context.events(6);
     assert_eq!(1, events.len());
     assert_eq!(1, events[0].note_number);
 }
