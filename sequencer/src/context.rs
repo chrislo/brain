@@ -55,7 +55,7 @@ impl Context {
 }
 
 fn note_number_to_sixteenth(note_number: i32) -> i32 {
-    note_number - 35
+    note_number - 36
 }
 
 #[test]
