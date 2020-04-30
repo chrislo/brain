@@ -1,7 +1,6 @@
 use crate::control::Message;
 use crate::event::Event;
 use crate::measure::Measure;
-use crate::track::Step;
 use crate::track::Track;
 
 #[derive(Debug, Clone)]
@@ -37,7 +36,7 @@ impl Context {
             Message::NoteOn { note_number: n } => {
                 let new_track = self
                     .track
-                    .toggle_step(note_number_to_step(*n, self.active_note_number));
+                    .toggle_sixteenth(note_number_to_sixteenth(*n), self.active_note_number);
                 Context {
                     track: new_track,
                     active_note_number: self.active_note_number,
@@ -56,20 +55,13 @@ impl Context {
     }
 }
 
-fn note_number_to_step(note_number: i32, active_note_number: i32) -> Step {
-    Step {
-        measure: Measure(note_number - 35, 16),
-        note_number: active_note_number,
-    }
+fn note_number_to_sixteenth(note_number: i32) -> i32 {
+    note_number - 35
 }
 
 #[test]
 fn test_events() {
-    let step = Step {
-        measure: Measure(2, 16),
-        note_number: 1,
-    };
-    let track = Track::empty().toggle_step(step);
+    let track = Track::empty().toggle_sixteenth(2, 1);
 
     let context = Context {
         track: track,

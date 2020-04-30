@@ -41,7 +41,15 @@ impl Track {
             .collect::<Vec<Event>>()
     }
 
-    pub fn toggle_step(&self, step: Step) -> Track {
+    pub fn toggle_sixteenth(&self, sixteenth: i32, note_number: i32) -> Track {
+        let step = Step {
+            measure: Measure(sixteenth, 16),
+            note_number: note_number,
+        };
+        self.toggle_step(step)
+    }
+
+    fn toggle_step(&self, step: Step) -> Track {
         let mut steps = self.steps.clone();
 
         if self.steps.contains(&step) {
@@ -65,10 +73,7 @@ impl Track {
 
 #[test]
 fn test_events_between() {
-    let track = Track::empty().toggle_step(Step {
-        measure: Measure(2, 16),
-        note_number: 1,
-    });
+    let track = Track::empty().toggle_sixteenth(2, 1);
 
     let events = track.events_between(Measure(1, 16), Measure(3, 16));
     assert_eq!(Measure(2, 16), events[0].start);
@@ -79,10 +84,7 @@ fn test_events_between() {
     let events = track.events_between(Measure(17, 16), Measure(19, 16));
     assert_eq!(Measure(2, 16), events[0].start);
 
-    let track = Track::empty().toggle_step(Step {
-        measure: Measure(1, 16),
-        note_number: 1,
-    });
+    let track = Track::empty().toggle_sixteenth(1, 1);
     let events = track.events_between(Measure(1, 32), Measure(2, 32));
     assert_eq!(Measure(1, 16), events[0].start);
 }
@@ -110,36 +112,24 @@ fn test_active_steps() {
 }
 
 #[test]
-fn test_toggle_step() {
+fn test_toggle_sixteenth() {
     let track = Track::empty();
 
-    let processed_track = track.toggle_step(Step {
-        measure: Measure(2, 16),
-        note_number: 1,
-    });
+    let processed_track = track.toggle_sixteenth(2, 1);
     assert_eq!(1, processed_track.active_steps().len());
 
-    let processed_track = processed_track.toggle_step(Step {
-        measure: Measure(2, 16),
-        note_number: 1,
-    });
+    let processed_track = processed_track.toggle_sixteenth(2, 1);
     assert_eq!(0, processed_track.active_steps().len());
 }
 
 #[test]
-fn test_toggle_step_with_different_note_numbers() {
+fn test_toggle_sixteenth_with_different_note_numbers() {
     let track = Track::empty();
 
-    let processed_track = track.toggle_step(Step {
-        measure: Measure(2, 16),
-        note_number: 1,
-    });
+    let processed_track = track.toggle_sixteenth(2, 1);
     assert_eq!(1, processed_track.active_steps().len());
 
-    let processed_track = processed_track.toggle_step(Step {
-        measure: Measure(2, 16),
-        note_number: 2,
-    });
+    let processed_track = processed_track.toggle_sixteenth(2, 2);
     assert_eq!(2, processed_track.active_steps().len());
 }
 
