@@ -9,7 +9,7 @@ note_on() {
 }
 
 pad() {
-    note=$(($1 + 36))
+    note=$(($1 + 35))
     note_on $note
 }
 
