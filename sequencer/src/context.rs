@@ -58,6 +58,24 @@ fn note_number_to_sixteenth(note_number: i32) -> i32 {
     note_number - 35
 }
 
+fn even_sixteenth(tick_number: i32) -> bool {
+    (((tick_number - 6) % 96) % 12) == 0
+}
+
+#[test]
+fn test_even_sixteenth() {
+    let even_sixteenths = vec![6, 18, 30, 42, 54, 66, 78, 90, 102];
+    for tick_number in even_sixteenths {
+        assert!(even_sixteenth(tick_number));
+    }
+
+    assert!(!even_sixteenth(0));
+    assert!(!even_sixteenth(1));
+    assert!(!even_sixteenth(95));
+    assert!(!even_sixteenth(96));
+    assert!(!even_sixteenth(97));
+}
+
 #[test]
 fn test_events() {
     let track = Track::empty().toggle_sixteenth(2, 1);
