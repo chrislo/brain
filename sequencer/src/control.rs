@@ -4,6 +4,8 @@ use rosc::OscPacket;
 pub enum Message {
     NoteOn { note_number: i32 },
     NoteOff { note_number: i32 },
+    KnobIncrement,
+    KnobDecrement,
     Left,
     Right,
     Unhandled,
@@ -29,6 +31,10 @@ pub fn parse_incoming_osc_message(packet: OscPacket) -> Message {
                             Message::Left
                         } else if *c == 102 && *v == 127 {
                             Message::Right
+                        } else if *c == 15 && *v == 1 {
+                            Message::KnobIncrement
+                        } else if *c == 15 && *v == 65 {
+                            Message::KnobDecrement
                         } else {
                             Message::Unhandled
                         }
@@ -84,4 +90,21 @@ fn test_parse_incoming_right_message() {
     });
     let msg = parse_incoming_osc_message(packet);
     assert!(matches!(msg, Message::Right));
+}
+
+#[test]
+fn test_parse_incoming_knob_control_change() {
+    let packet = OscPacket::Message(OscMessage {
+        addr: "/midi/atom/1/1/control_change".to_string(),
+        args: vec![rosc::OscType::Int(15), rosc::OscType::Int(65)],
+    });
+    let msg = parse_incoming_osc_message(packet);
+    assert!(matches!(msg, Message::KnobDecrement));
+
+    let packet = OscPacket::Message(OscMessage {
+        addr: "/midi/atom/1/1/control_change".to_string(),
+        args: vec![rosc::OscType::Int(15), rosc::OscType::Int(1)],
+    });
+    let msg = parse_incoming_osc_message(packet);
+    assert!(matches!(msg, Message::KnobIncrement));
 }
