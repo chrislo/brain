@@ -6,6 +6,7 @@ use crate::track::Track;
 pub struct Context {
     pub track: Track,
     pub active_note_number: i32,
+    pub swing_amount: i32,
 }
 
 impl Context {
@@ -27,7 +28,17 @@ impl Context {
     }
 
     pub fn events(&self, tick_number: i32) -> Vec<Event> {
-        self.track.events_for_tick(tick_number)
+        if self.swing_amount > 0 {
+            if even_sixteenth(tick_number) {
+                vec![]
+            } else if even_sixteenth(tick_number - self.swing_amount) {
+                self.track.events_for_tick(tick_number - self.swing_amount)
+            } else {
+                self.track.events_for_tick(tick_number)
+            }
+        } else {
+            self.track.events_for_tick(tick_number)
+        }
     }
 
     fn process_message(&self, message: &Message) -> Context {
@@ -39,15 +50,18 @@ impl Context {
                 Context {
                     track: new_track,
                     active_note_number: self.active_note_number,
+                    swing_amount: self.swing_amount,
                 }
             }
             Message::Left => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number - 1,
+                swing_amount: self.swing_amount,
             },
             Message::Right => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number + 1,
+                swing_amount: self.swing_amount,
             },
             _ => self.clone(),
         }
@@ -83,9 +97,29 @@ fn test_events() {
     let context = Context {
         track: track,
         active_note_number: 1,
+        swing_amount: 0,
     };
 
     let events = context.events(6);
+    assert_eq!(1, events.len());
+    assert_eq!(1, events[0].note_number);
+}
+
+#[test]
+fn test_events_with_swing() {
+    let track = Track::empty().toggle_sixteenth(2, 1);
+    let swing_amount = 2;
+
+    let context = Context {
+        track: track,
+        active_note_number: 1,
+        swing_amount: swing_amount,
+    };
+
+    let events = context.events(6);
+    assert_eq!(0, events.len());
+
+    let events = context.events(6 + swing_amount);
     assert_eq!(1, events.len());
     assert_eq!(1, events[0].note_number);
 }
@@ -95,6 +129,7 @@ fn test_process_note_on_message() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 2,
+        swing_amount: 0,
     };
     let messages = vec![Message::NoteOn { note_number: 43 }];
 
@@ -111,6 +146,7 @@ fn test_process_left_message() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 1,
+        swing_amount: 0,
     };
 
     let processed_context = context.process_messages(vec![Message::Left]);
@@ -126,6 +162,7 @@ fn test_process_right_message() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 1,
+        swing_amount: 0,
     };
 
     let processed_context = context.process_messages(vec![Message::Right]);
@@ -137,6 +174,7 @@ fn test_process_two_messages() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 1,
+        swing_amount: 0,
     };
     let messages = vec![
         Message::NoteOn { note_number: 42 },

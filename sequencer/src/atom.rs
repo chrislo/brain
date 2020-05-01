@@ -102,6 +102,7 @@ fn test_active_pads() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 1,
+        swing_amount: 0,
     };
 
     let messages = vec![Message::NoteOn { note_number: 37 }];

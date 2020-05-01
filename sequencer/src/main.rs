@@ -25,6 +25,7 @@ fn main() {
         let mut current_context = Context {
             track: Track::empty(),
             active_note_number: 1,
+            swing_amount: 0,
         };
 
         loop {
