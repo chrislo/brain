@@ -19,13 +19,13 @@ fn main() {
     let (s, r) = unbounded();
 
     let event_thread = thread::spawn(move || {
-        let bpm = 120.0;
         let mut current_tick_number = 0;
 
         let mut current_context = Context {
             track: Track::empty(),
             active_note_number: 1,
             swing_amount: 0,
+            bpm: 120.0,
         };
 
         loop {
@@ -43,7 +43,7 @@ fn main() {
             atom::update(&current_context, &next_context);
 
             let elapsed_time = now.elapsed();
-            let sleep_time = tick_duration(bpm) - elapsed_time;
+            let sleep_time = tick_duration(current_context.bpm) - elapsed_time;
             thread::sleep(sleep_time);
 
             current_tick_number = next_tick_number;

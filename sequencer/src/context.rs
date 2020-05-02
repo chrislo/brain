@@ -7,6 +7,7 @@ pub struct Context {
     pub track: Track,
     pub active_note_number: i32,
     pub swing_amount: i32,
+    pub bpm: f32,
 }
 
 impl Context {
@@ -52,27 +53,32 @@ impl Context {
                     track: new_track,
                     active_note_number: self.active_note_number,
                     swing_amount: self.swing_amount,
+                    bpm: self.bpm,
                 }
             }
             Message::Left => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number - 1,
                 swing_amount: self.swing_amount,
+                bpm: self.bpm,
             },
             Message::Right => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number + 1,
                 swing_amount: self.swing_amount,
+                bpm: self.bpm,
             },
             Message::KnobIncrement { number: _n } => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::min(self.swing_amount + 1, 100),
+                bpm: self.bpm,
             },
             Message::KnobDecrement { number: _n } => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
+                bpm: self.bpm,
             },
             _ => self.clone(),
         }
@@ -115,6 +121,7 @@ fn test_events() {
         track: track,
         active_note_number: 1,
         swing_amount: 0,
+        bpm: 120.0,
     };
 
     let events = context.events(6);
@@ -131,6 +138,7 @@ fn test_events_with_swing() {
         track: track,
         active_note_number: 1,
         swing_amount: swing_amount,
+        bpm: 120.0,
     };
 
     let events = context.events(6);
@@ -147,6 +155,7 @@ fn test_process_note_on_message() {
         track: Track::empty(),
         active_note_number: 2,
         swing_amount: 0,
+        bpm: 120.0,
     };
     let messages = vec![Message::NoteOn { note_number: 43 }];
 
@@ -164,6 +173,7 @@ fn test_process_left_message() {
         track: Track::empty(),
         active_note_number: 1,
         swing_amount: 0,
+        bpm: 120.0,
     };
 
     let processed_context = context.process_messages(vec![Message::Left]);
@@ -180,6 +190,7 @@ fn test_process_right_message() {
         track: Track::empty(),
         active_note_number: 1,
         swing_amount: 0,
+        bpm: 120.0,
     };
 
     let processed_context = context.process_messages(vec![Message::Right]);
@@ -192,6 +203,7 @@ fn test_process_two_messages() {
         track: Track::empty(),
         active_note_number: 1,
         swing_amount: 0,
+        bpm: 120.0,
     };
     let messages = vec![
         Message::NoteOn { note_number: 42 },
