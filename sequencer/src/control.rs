@@ -4,8 +4,8 @@ use rosc::OscPacket;
 pub enum Message {
     NoteOn { note_number: i32 },
     NoteOff { note_number: i32 },
-    KnobIncrement,
-    KnobDecrement,
+    KnobIncrement { number: i32 },
+    KnobDecrement { number: i32 },
     Left,
     Right,
     Unhandled,
@@ -31,10 +31,10 @@ pub fn parse_incoming_osc_message(packet: OscPacket) -> Message {
                             Message::Left
                         } else if *c == 102 && *v == 127 {
                             Message::Right
-                        } else if *c == 15 && *v == 1 {
-                            Message::KnobIncrement
-                        } else if *c == 15 && *v == 65 {
-                            Message::KnobDecrement
+                        } else if *c >= 14 && *c <= 17 && *v == 1 {
+                            Message::KnobIncrement { number: c - 13 }
+                        } else if *c >= 14 && *c <= 17 && *v == 65 {
+                            Message::KnobDecrement { number: c - 13 }
                         } else {
                             Message::Unhandled
                         }
@@ -96,15 +96,23 @@ fn test_parse_incoming_right_message() {
 fn test_parse_incoming_knob_control_change() {
     let packet = OscPacket::Message(OscMessage {
         addr: "/midi/atom/1/1/control_change".to_string(),
+        args: vec![rosc::OscType::Int(14), rosc::OscType::Int(65)],
+    });
+    let msg = parse_incoming_osc_message(packet);
+
+    assert!(matches!(msg, Message::KnobDecrement { number: 1 }));
+
+    let packet = OscPacket::Message(OscMessage {
+        addr: "/midi/atom/1/1/control_change".to_string(),
         args: vec![rosc::OscType::Int(15), rosc::OscType::Int(65)],
     });
     let msg = parse_incoming_osc_message(packet);
-    assert!(matches!(msg, Message::KnobDecrement));
+    assert!(matches!(msg, Message::KnobDecrement { number: 2 }));
 
     let packet = OscPacket::Message(OscMessage {
         addr: "/midi/atom/1/1/control_change".to_string(),
         args: vec![rosc::OscType::Int(15), rosc::OscType::Int(1)],
     });
     let msg = parse_incoming_osc_message(packet);
-    assert!(matches!(msg, Message::KnobIncrement));
+    assert!(matches!(msg, Message::KnobIncrement { number: 2 }));
 }

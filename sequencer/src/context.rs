@@ -64,12 +64,12 @@ impl Context {
                 active_note_number: self.active_note_number + 1,
                 swing_amount: self.swing_amount,
             },
-            Message::KnobIncrement => Context {
+            Message::KnobIncrement { number: _n } => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::min(self.swing_amount + 1, 100),
             },
-            Message::KnobDecrement => Context {
+            Message::KnobDecrement { number: _n } => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
