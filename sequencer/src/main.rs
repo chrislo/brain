@@ -25,6 +25,7 @@ fn main() {
         let mut current_context = Context {
             track: Track::empty(),
             active_note_number: 1,
+            swing_amount: 0,
         };
 
         loop {
@@ -62,6 +63,8 @@ fn main() {
                     Message::NoteOn { .. } => s.send(message).unwrap(),
                     Message::Left { .. } => s.send(message).unwrap(),
                     Message::Right { .. } => s.send(message).unwrap(),
+                    Message::KnobIncrement { .. } => s.send(message).unwrap(),
+                    Message::KnobDecrement { .. } => s.send(message).unwrap(),
                     _ => {}
                 }
             }

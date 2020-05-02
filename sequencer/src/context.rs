@@ -6,6 +6,7 @@ use crate::track::Track;
 pub struct Context {
     pub track: Track,
     pub active_note_number: i32,
+    pub swing_amount: i32,
 }
 
 impl Context {
@@ -27,7 +28,18 @@ impl Context {
     }
 
     pub fn events(&self, tick_number: i32) -> Vec<Event> {
-        self.track.events_for_tick(tick_number)
+        let swing_amount = percentage_swing_to_ticks(self.swing_amount);
+        if swing_amount > 0 {
+            if even_sixteenth(tick_number) {
+                vec![]
+            } else if even_sixteenth(tick_number - swing_amount) {
+                self.track.events_for_tick(tick_number - swing_amount)
+            } else {
+                self.track.events_for_tick(tick_number)
+            }
+        } else {
+            self.track.events_for_tick(tick_number)
+        }
     }
 
     fn process_message(&self, message: &Message) -> Context {
@@ -39,15 +51,28 @@ impl Context {
                 Context {
                     track: new_track,
                     active_note_number: self.active_note_number,
+                    swing_amount: self.swing_amount,
                 }
             }
             Message::Left => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number - 1,
+                swing_amount: self.swing_amount,
             },
             Message::Right => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number + 1,
+                swing_amount: self.swing_amount,
+            },
+            Message::KnobIncrement => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number,
+                swing_amount: std::cmp::min(self.swing_amount + 1, 100),
+            },
+            Message::KnobDecrement => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number,
+                swing_amount: std::cmp::max(self.swing_amount - 1, 0),
             },
             _ => self.clone(),
         }
@@ -58,6 +83,30 @@ fn note_number_to_sixteenth(note_number: i32) -> i32 {
     note_number - 35
 }
 
+fn even_sixteenth(tick_number: i32) -> bool {
+    (((tick_number - 6) % 96) % 12) == 0
+}
+
+fn percentage_swing_to_ticks(swing_percentage: i32) -> i32 {
+    // Scale swing ticks between 0 and 6
+    let max_ticks = 6.;
+    (swing_percentage as f64 / (100. / max_ticks)).floor() as i32
+}
+
+#[test]
+fn test_even_sixteenth() {
+    let even_sixteenths = vec![6, 18, 30, 42, 54, 66, 78, 90, 102];
+    for tick_number in even_sixteenths {
+        assert!(even_sixteenth(tick_number));
+    }
+
+    assert!(!even_sixteenth(0));
+    assert!(!even_sixteenth(1));
+    assert!(!even_sixteenth(95));
+    assert!(!even_sixteenth(96));
+    assert!(!even_sixteenth(97));
+}
+
 #[test]
 fn test_events() {
     let track = Track::empty().toggle_sixteenth(2, 1);
@@ -65,9 +114,29 @@ fn test_events() {
     let context = Context {
         track: track,
         active_note_number: 1,
+        swing_amount: 0,
     };
 
     let events = context.events(6);
+    assert_eq!(1, events.len());
+    assert_eq!(1, events[0].note_number);
+}
+
+#[test]
+fn test_events_with_swing() {
+    let track = Track::empty().toggle_sixteenth(2, 1);
+    let swing_amount = 20;
+
+    let context = Context {
+        track: track,
+        active_note_number: 1,
+        swing_amount: swing_amount,
+    };
+
+    let events = context.events(6);
+    assert_eq!(0, events.len());
+
+    let events = context.events(6 + percentage_swing_to_ticks(swing_amount));
     assert_eq!(1, events.len());
     assert_eq!(1, events[0].note_number);
 }
@@ -77,6 +146,7 @@ fn test_process_note_on_message() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 2,
+        swing_amount: 0,
     };
     let messages = vec![Message::NoteOn { note_number: 43 }];
 
@@ -93,6 +163,7 @@ fn test_process_left_message() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 1,
+        swing_amount: 0,
     };
 
     let processed_context = context.process_messages(vec![Message::Left]);
@@ -108,6 +179,7 @@ fn test_process_right_message() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 1,
+        swing_amount: 0,
     };
 
     let processed_context = context.process_messages(vec![Message::Right]);
@@ -119,6 +191,7 @@ fn test_process_two_messages() {
     let context = Context {
         track: Track::empty(),
         active_note_number: 1,
+        swing_amount: 0,
     };
     let messages = vec![
         Message::NoteOn { note_number: 42 },
