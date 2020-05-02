@@ -68,13 +68,25 @@ impl Context {
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
             },
-            Message::KnobIncrement { number: _n } => Context {
+            Message::KnobIncrement { number: 1 } => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number,
+                swing_amount: self.swing_amount,
+                bpm: (self.bpm + 1.0).min(240.0),
+            },
+            Message::KnobDecrement { number: 1 } => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number,
+                swing_amount: std::cmp::max(self.swing_amount - 1, 0),
+                bpm: (self.bpm - 1.0).max(30.0),
+            },
+            Message::KnobIncrement { number: 2 } => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::min(self.swing_amount + 1, 100),
                 bpm: self.bpm,
             },
-            Message::KnobDecrement { number: _n } => Context {
+            Message::KnobDecrement { number: 2 } => Context {
                 track: self.track.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
@@ -220,6 +232,23 @@ fn test_process_two_messages() {
             .len()
     );
 }
+
+#[test]
+fn test_process_knob_1_bpm_set_message() {
+    let context = Context {
+        track: Track::empty(),
+        active_note_number: 1,
+        swing_amount: 0,
+        bpm: 120.0,
+    };
+
+    let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 1 }]);
+    assert_eq!(121.0, processed_context.bpm);
+
+    let processed_context = context.process_messages(vec![Message::KnobDecrement { number: 1 }]);
+    assert_eq!(119.0, processed_context.bpm);
+}
+
 #[test]
 fn test_process_knob_2_swing_set_message() {
     let context = Context {
