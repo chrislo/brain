@@ -63,6 +63,8 @@ fn main() {
                     Message::NoteOn { .. } => s.send(message).unwrap(),
                     Message::Left { .. } => s.send(message).unwrap(),
                     Message::Right { .. } => s.send(message).unwrap(),
+                    Message::KnobIncrement { .. } => s.send(message).unwrap(),
+                    Message::KnobDecrement { .. } => s.send(message).unwrap(),
                     _ => {}
                 }
             }

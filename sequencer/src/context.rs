@@ -28,11 +28,12 @@ impl Context {
     }
 
     pub fn events(&self, tick_number: i32) -> Vec<Event> {
-        if self.swing_amount > 0 {
+        let swing_amount = percentage_swing_to_ticks(self.swing_amount);
+        if swing_amount > 0 {
             if even_sixteenth(tick_number) {
                 vec![]
-            } else if even_sixteenth(tick_number - self.swing_amount) {
-                self.track.events_for_tick(tick_number - self.swing_amount)
+            } else if even_sixteenth(tick_number - swing_amount) {
+                self.track.events_for_tick(tick_number - swing_amount)
             } else {
                 self.track.events_for_tick(tick_number)
             }
@@ -63,6 +64,16 @@ impl Context {
                 active_note_number: self.active_note_number + 1,
                 swing_amount: self.swing_amount,
             },
+            Message::KnobIncrement => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number,
+                swing_amount: std::cmp::min(self.swing_amount + 1, 100),
+            },
+            Message::KnobDecrement => Context {
+                track: self.track.clone(),
+                active_note_number: self.active_note_number,
+                swing_amount: std::cmp::max(self.swing_amount - 1, 0),
+            },
             _ => self.clone(),
         }
     }
@@ -74,6 +85,12 @@ fn note_number_to_sixteenth(note_number: i32) -> i32 {
 
 fn even_sixteenth(tick_number: i32) -> bool {
     (((tick_number - 6) % 96) % 12) == 0
+}
+
+fn percentage_swing_to_ticks(swing_percentage: i32) -> i32 {
+    // Scale swing ticks between 0 and 6
+    let max_ticks = 6.;
+    (swing_percentage as f64 / (100. / max_ticks)).floor() as i32
 }
 
 #[test]
@@ -108,7 +125,7 @@ fn test_events() {
 #[test]
 fn test_events_with_swing() {
     let track = Track::empty().toggle_sixteenth(2, 1);
-    let swing_amount = 2;
+    let swing_amount = 20;
 
     let context = Context {
         track: track,
@@ -119,7 +136,7 @@ fn test_events_with_swing() {
     let events = context.events(6);
     assert_eq!(0, events.len());
 
-    let events = context.events(6 + swing_amount);
+    let events = context.events(6 + percentage_swing_to_ticks(swing_amount));
     assert_eq!(1, events.len());
     assert_eq!(1, events[0].note_number);
 }
