@@ -220,3 +220,18 @@ fn test_process_two_messages() {
             .len()
     );
 }
+#[test]
+fn test_process_knob_2_swing_set_message() {
+    let context = Context {
+        track: Track::empty(),
+        active_note_number: 1,
+        swing_amount: 0,
+        bpm: 120.0,
+    };
+
+    let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 2 }]);
+    assert_eq!(1, processed_context.swing_amount);
+
+    let processed_context = context.process_messages(vec![Message::KnobDecrement { number: 2 }]);
+    assert_eq!(0, processed_context.swing_amount);
+}
