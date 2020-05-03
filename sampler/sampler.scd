@@ -9,9 +9,10 @@ s.waitForBoot({
 
   SynthDef(\playMono, {
     arg obs=0, buf, rate=1, amp=1;
-    var sig;
+    var sig, pan;
     sig = PlayBuf.ar(1, buf, rate, \t_tr.kr(1, 0), doneAction: Done.freeSelf);
-    Out.ar(obs, sig);
+    pan = Pan2.ar(sig, 0, 1);
+    Out.ar(obs, pan);
   }).add;
 
   SynthDef(\playStereo, {
