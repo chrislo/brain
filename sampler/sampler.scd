@@ -7,10 +7,17 @@ s.waitForBoot({
     ~dict.put(afile.fileNameWithoutExtension, buffer);
   };
 
-  SynthDef(\sampler, {
+  SynthDef(\playMono, {
     arg obs=0, buf, rate=1, amp=1;
     var sig;
     sig = PlayBuf.ar(1, buf, rate, \t_tr.kr(1, 0), doneAction: Done.freeSelf);
+    Out.ar(obs, sig);
+  }).add;
+
+  SynthDef(\playStereo, {
+    arg obs=0, buf, rate=1, amp=1;
+    var sig;
+    sig = PlayBuf.ar(2, buf, rate, \t_tr.kr(1, 0), doneAction: Done.freeSelf);
     Out.ar(obs, sig);
   }).add;
 
@@ -21,7 +28,14 @@ s.waitForBoot({
 
     if (~dict.includesKey(number)) {
       buffer = ~dict.at(number);
-      Synth(\sampler, [\buf, buffer.bufnum]);
+
+      if((buffer.numChannels == 1), {
+        Synth(\playMono, [\buf, buffer.bufnum])
+      }, {
+        if((buffer.numChannels == 2), {
+          Synth(\playStereo, [\buf, buffer.bufnum])
+        })
+      });
     };
   };
 
