@@ -1,6 +1,11 @@
 extern crate crossbeam;
 extern crate rosc;
 
+use rosc::encoder;
+use rosc::{OscMessage, OscPacket};
+use std::net::SocketAddrV4;
+use std::str::FromStr;
+
 use crossbeam::crossbeam_channel::unbounded;
 use std::net::UdpSocket;
 use std::thread;
@@ -31,6 +36,8 @@ fn main() {
         };
 
         loop {
+            send_clock();
+
             let now = Instant::now();
             let next_tick_number = current_tick_number + 1;
 
@@ -86,4 +93,17 @@ fn tick_duration(bpm: f32) -> Duration {
     let length_of_measure_in_ms = (length_of_measure_in_beats * ms_per_beat) as u64;
 
     Duration::from_millis(length_of_measure_in_ms)
+}
+
+fn send_clock() {
+    let packet = encoder::encode(&OscPacket::Message(OscMessage {
+        addr: "/*/clock".to_string(),
+        args: vec![],
+    }))
+    .unwrap();
+
+    let sock = UdpSocket::bind("0.0.0.0:0").unwrap();
+    let to_addr = SocketAddrV4::from_str("127.0.0.1:57200").unwrap();
+
+    sock.send_to(&packet, to_addr).unwrap();
 }
