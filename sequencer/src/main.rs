@@ -7,6 +7,7 @@ use std::thread;
 use std::time::Instant;
 
 use sequencer::atom;
+use sequencer::config;
 use sequencer::context::Context;
 use sequencer::control::parse_incoming_osc_message;
 use sequencer::control::Message;
@@ -14,6 +15,7 @@ use sequencer::track::Track;
 use std::time::Duration;
 
 fn main() {
+    config::parse();
     atom::init();
 
     let (s, r) = unbounded();

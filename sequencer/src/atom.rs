@@ -1,3 +1,4 @@
+use crate::config;
 use crate::context::Context;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
@@ -12,7 +13,7 @@ pub fn init() {
 
 pub fn handshake() {
     let packet = encoder::encode(&OscPacket::Message(OscMessage {
-        addr: "/atom/note_off".to_string(),
+        addr: message_to_addr("note_off".to_string()),
         args: vec![
             rosc::OscType::Int(16),
             rosc::OscType::Int(0),
@@ -58,7 +59,7 @@ fn turn_all_lights_off() {
 
 fn turn_light_on(note_number: i32) {
     let packet = encoder::encode(&OscPacket::Message(OscMessage {
-        addr: "/atom/note_on".to_string(),
+        addr: message_to_addr("note_on".to_string()),
         args: vec![
             rosc::OscType::Int(1),
             rosc::OscType::Int(note_number),
@@ -72,7 +73,7 @@ fn turn_light_on(note_number: i32) {
 
 fn turn_light_off(note_number: i32) {
     let packet = encoder::encode(&OscPacket::Message(OscMessage {
-        addr: "/atom/note_on".to_string(),
+        addr: message_to_addr("note_on".to_string()),
         args: vec![
             rosc::OscType::Int(1),
             rosc::OscType::Int(note_number),
@@ -89,6 +90,12 @@ fn send_osc_to_o2m(packet: Vec<u8>) {
     let to_addr = SocketAddrV4::from_str("127.0.0.1:57200").unwrap();
 
     sock.send_to(&packet, to_addr).unwrap();
+}
+
+fn message_to_addr(message: String) -> String {
+    let config = config::parse();
+    let controller_addr = config.value_of("controller").unwrap();
+    format!("/{}/{}", controller_addr, message)
 }
 
 #[cfg(test)]
