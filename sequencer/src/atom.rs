@@ -105,6 +105,11 @@ use crate::control::Message;
 use crate::track::Track;
 
 #[test]
+fn test_message_to_addr() {
+    assert_eq!("/atom/note_on", message_to_addr("note_on".to_string()));
+}
+
+#[test]
 fn test_active_pads() {
     let context = Context {
         track: Track::empty(),
