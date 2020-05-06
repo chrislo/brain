@@ -9,3 +9,8 @@ pub fn parse() -> clap::ArgMatches {
         )
         .get_matches()
 }
+
+pub fn controller_addr() -> String {
+    let config = parse();
+    config.value_of("controller").unwrap().to_string()
+}

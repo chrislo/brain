@@ -93,8 +93,7 @@ fn send_osc_to_o2m(packet: Vec<u8>) {
 }
 
 fn message_to_addr(message: String) -> String {
-    let config = config::parse();
-    let controller_addr = config.value_of("controller").unwrap();
+    let controller_addr = config::controller_addr();
     format!("/{}/{}", controller_addr, message)
 }
 
