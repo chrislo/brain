@@ -114,3 +114,25 @@ I haven't installed the SC plugins yet, as I'm not sure if I'll need them.
 
     cd brain/sequencer
     cargo build --release
+
+# Optional: Replace Pi's built in audio with external sound card
+
+The internal sound card in the Pi isn't great. There's lots of options for external sound cards, and you can find decent 2-in and 2-out cards for not a lot of money. I bought a [Sabrent AU-MMSA](https://www.sabrent.com/product/AU-MMSA/usb-external-stereo-3d-sound-adapter-black) for around £6.
+
+To avoid confusion, you can first disable the built-in audio interface. Edit `/boot/config.txt` and comment out the line
+
+    #dtparam=audio=on
+
+The reboot with `sudo reboot`.
+
+Plug in the external USB sound card and take a note of its number within ALSA with `aplay -l`
+
+For example, for my Sabrent card it reads
+
+    card 1: Device [USB Audio Device], device 0: USB Audio [USB Audio]
+    Subdevices: 1/1
+    Subdevice #0: subdevice #0
+
+Then edit the `~/.jackdrc` file to refer to the number of this device, in this case it's `card 1` so `hw:1`:
+
+    /usr/bin/jackd -P75 -dalsa -dhw:1 -r44100 -p512 -n3
