@@ -14,7 +14,7 @@ use std::time::Instant;
 use sequencer::atom;
 use sequencer::config;
 use sequencer::context::Context;
-use sequencer::control::parse_incoming_osc_message;
+use sequencer::control::process_incoming_message;
 use sequencer::control::Message;
 use sequencer::track::Track;
 use std::time::Duration;
@@ -25,7 +25,7 @@ fn main() {
 
     let (s, r) = unbounded();
 
-    let event_thread = thread::spawn(move || {
+    thread::spawn(move || {
         let mut current_tick_number = 0;
 
         let mut current_context = Context {
@@ -60,27 +60,13 @@ fn main() {
         }
     });
 
-    let sock = UdpSocket::bind("127.0.0.1:57120").unwrap();
-    let mut buf = [0u8; rosc::decoder::MTU];
-
     loop {
-        match sock.recv_from(&mut buf) {
-            Ok((size, _addr)) => {
-                let packet = rosc::decoder::decode(&buf[..size]).unwrap();
-                let message = parse_incoming_osc_message(packet);
-                match message {
-                    Message::Unhandled => {}
-                    _ => s.send(message).unwrap(),
-                }
-            }
-            Err(e) => {
-                println!("Error receiving from socket: {}", e);
-                break;
-            }
+        let incoming_mssage = process_incoming_message();
+        match incoming_mssage {
+            Message::Unhandled => {}
+            _ => s.send(incoming_mssage).unwrap(),
         }
     }
-
-    event_thread.join().unwrap();
 }
 
 fn tick_duration(bpm: f32) -> Duration {

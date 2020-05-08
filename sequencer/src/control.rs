@@ -1,4 +1,5 @@
 use rosc::OscPacket;
+use std::net::UdpSocket;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -9,6 +10,26 @@ pub enum Message {
     Left,
     Right,
     Unhandled,
+}
+
+pub fn process_incoming_message() -> Message {
+    let sock = UdpSocket::bind("127.0.0.1:57120").unwrap();
+    let mut buf = [0u8; rosc::decoder::MTU];
+
+    match sock.recv_from(&mut buf) {
+        Ok((size, _addr)) => {
+            let packet = rosc::decoder::decode(&buf[..size]).unwrap();
+            let message = parse_incoming_osc_message(packet);
+            match message {
+                Message::Unhandled => Message::Unhandled,
+                _ => message,
+            }
+        }
+        Err(e) => {
+            println!("Error receiving from socket: {}", e);
+            Message::Unhandled
+        }
+    }
 }
 
 pub fn parse_incoming_osc_message(packet: OscPacket) -> Message {
