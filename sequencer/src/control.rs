@@ -12,7 +12,7 @@ pub enum Message {
     Unhandled,
 }
 
-pub fn process_incoming_message() -> Message {
+pub fn process_incoming_message() -> Option<Message> {
     let sock = UdpSocket::bind("127.0.0.1:57120").unwrap();
     let mut buf = [0u8; rosc::decoder::MTU];
 
@@ -21,13 +21,13 @@ pub fn process_incoming_message() -> Message {
             let packet = rosc::decoder::decode(&buf[..size]).unwrap();
             let message = parse_incoming_osc_message(packet);
             match message {
-                Message::Unhandled => Message::Unhandled,
-                _ => message,
+                Message::Unhandled => None,
+                _ => Some(message),
             }
         }
         Err(e) => {
             println!("Error receiving from socket: {}", e);
-            Message::Unhandled
+            None
         }
     }
 }

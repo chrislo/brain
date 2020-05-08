@@ -15,7 +15,6 @@ use sequencer::atom;
 use sequencer::config;
 use sequencer::context::Context;
 use sequencer::control::process_incoming_message;
-use sequencer::control::Message;
 use sequencer::track::Track;
 use std::time::Duration;
 
@@ -61,10 +60,9 @@ fn main() {
     });
 
     loop {
-        let incoming_message = process_incoming_message();
-        match incoming_message {
-            Message::Unhandled => {}
-            _ => s.send(incoming_message).unwrap(),
+        match process_incoming_message() {
+            Some(msg) => s.send(msg).unwrap(),
+            None => {}
         }
     }
 }
