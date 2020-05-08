@@ -37,7 +37,7 @@ fn main() {
 
             let events = current_context.events(current_tick_number);
             for event in events {
-                event.send_via_osc();
+                output::send_via_osc(event.to_osc_message());
             }
 
             let messages = r.try_iter().collect();
