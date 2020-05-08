@@ -69,12 +69,8 @@ fn main() {
                 let packet = rosc::decoder::decode(&buf[..size]).unwrap();
                 let message = parse_incoming_osc_message(packet);
                 match message {
-                    Message::NoteOn { .. } => s.send(message).unwrap(),
-                    Message::Left { .. } => s.send(message).unwrap(),
-                    Message::Right { .. } => s.send(message).unwrap(),
-                    Message::KnobIncrement { .. } => s.send(message).unwrap(),
-                    Message::KnobDecrement { .. } => s.send(message).unwrap(),
-                    _ => {}
+                    Message::Unhandled => {}
+                    _ => s.send(message).unwrap(),
                 }
             }
             Err(e) => {
