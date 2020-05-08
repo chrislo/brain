@@ -1,10 +1,9 @@
 use crate::config;
 use crate::context::Context;
+use crate::output;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
 use std::collections::HashSet;
-use std::net::{SocketAddrV4, UdpSocket};
-use std::str::FromStr;
 
 pub fn init() {
     handshake();
@@ -22,7 +21,7 @@ pub fn handshake() {
     }))
     .unwrap();
 
-    send_osc_to_o2m(packet);
+    output::send_osc_to_o2m(packet);
 }
 
 pub fn update(current_context: &Context, next_context: &Context) {
@@ -68,7 +67,7 @@ fn turn_light_on(note_number: i32) {
     }))
     .unwrap();
 
-    send_osc_to_o2m(packet);
+    output::send_osc_to_o2m(packet);
 }
 
 fn turn_light_off(note_number: i32) {
@@ -82,14 +81,7 @@ fn turn_light_off(note_number: i32) {
     }))
     .unwrap();
 
-    send_osc_to_o2m(packet);
-}
-
-fn send_osc_to_o2m(packet: Vec<u8>) {
-    let sock = UdpSocket::bind("0.0.0.0:0").unwrap();
-    let to_addr = SocketAddrV4::from_str("127.0.0.1:57200").unwrap();
-
-    sock.send_to(&packet, to_addr).unwrap();
+    output::send_osc_to_o2m(packet);
 }
 
 fn message_to_addr(message: String) -> String {
