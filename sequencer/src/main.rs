@@ -8,7 +8,7 @@ use std::time::Instant;
 use sequencer::atom;
 use sequencer::config;
 use sequencer::context::Context;
-use sequencer::input::process_incoming_message;
+use sequencer::input;
 use sequencer::output;
 use sequencer::track::Track;
 use std::time::Duration;
@@ -55,7 +55,7 @@ fn main() {
     });
 
     loop {
-        match process_incoming_message() {
+        match input::process_incoming_message() {
             Some(msg) => s.send(msg).unwrap(),
             None => {}
         }
