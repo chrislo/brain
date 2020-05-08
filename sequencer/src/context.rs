@@ -1,5 +1,5 @@
-use crate::control::Message;
 use crate::event::Event;
+use crate::input::Message;
 use crate::track::Track;
 
 #[derive(Debug, Clone)]

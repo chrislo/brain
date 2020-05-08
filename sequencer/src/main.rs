@@ -14,7 +14,7 @@ use std::time::Instant;
 use sequencer::atom;
 use sequencer::config;
 use sequencer::context::Context;
-use sequencer::control::process_incoming_message;
+use sequencer::input::process_incoming_message;
 use sequencer::track::Track;
 use std::time::Duration;
 

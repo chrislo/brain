@@ -98,7 +98,7 @@ fn message_to_addr(message: String) -> String {
 }
 
 #[cfg(test)]
-use crate::control::Message;
+use crate::input::Message;
 
 #[cfg(test)]
 use crate::track::Track;
