@@ -61,10 +61,10 @@ fn main() {
     });
 
     loop {
-        let incoming_mssage = process_incoming_message();
-        match incoming_mssage {
+        let incoming_message = process_incoming_message();
+        match incoming_message {
             Message::Unhandled => {}
-            _ => s.send(incoming_mssage).unwrap(),
+            _ => s.send(incoming_message).unwrap(),
         }
     }
 }
