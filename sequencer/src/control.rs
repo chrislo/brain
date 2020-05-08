@@ -32,7 +32,7 @@ pub fn process_incoming_message() -> Option<Message> {
     }
 }
 
-pub fn parse_incoming_osc_message(packet: OscPacket) -> Message {
+fn parse_incoming_osc_message(packet: OscPacket) -> Message {
     match packet {
         OscPacket::Message(msg) => {
             if msg.addr.contains("note_on") {
