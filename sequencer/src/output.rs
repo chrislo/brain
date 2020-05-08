@@ -25,8 +25,5 @@ pub fn send_clock() {
     }))
     .unwrap();
 
-    let sock = UdpSocket::bind("0.0.0.0:0").unwrap();
-    let to_addr = SocketAddrV4::from_str("127.0.0.1:57200").unwrap();
-
-    sock.send_to(&packet, to_addr).unwrap();
+    send_osc_to_o2m(packet);
 }
