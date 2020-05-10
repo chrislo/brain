@@ -2,6 +2,7 @@ extern crate crossbeam;
 extern crate rosc;
 
 use crossbeam::crossbeam_channel::unbounded;
+use std::net::UdpSocket;
 use std::thread;
 use std::time::Instant;
 
@@ -54,8 +55,10 @@ fn main() {
         }
     });
 
+    let sock = UdpSocket::bind("127.0.0.1:57120").unwrap();
+
     loop {
-        match input::process_incoming_message() {
+        match input::process_incoming_message(&sock) {
             Some(msg) => s.send(msg).unwrap(),
             None => {}
         }

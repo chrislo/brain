@@ -12,8 +12,7 @@ pub enum Message {
     Unhandled,
 }
 
-pub fn process_incoming_message() -> Option<Message> {
-    let sock = UdpSocket::bind("127.0.0.1:57120").unwrap();
+pub fn process_incoming_message(sock: &UdpSocket) -> Option<Message> {
     let mut buf = [0u8; rosc::decoder::MTU];
 
     match sock.recv_from(&mut buf) {
