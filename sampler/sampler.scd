@@ -1,7 +1,9 @@
 s.waitForBoot({
   ~dict = Dictionary.new(n: 16);
 
-  PathName.new("samples/").filesDo { |afile|
+  ~samplesDir = thisProcess.nowExecutingPath.dirname +/+ "samples";
+
+  PathName.new(~samplesDir).filesDo { |afile|
     var buffer;
     buffer = Buffer.read(s, afile.fullPath);
     ~dict.put(afile.fileNameWithoutExtension, buffer);
