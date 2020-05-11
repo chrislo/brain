@@ -5,4 +5,4 @@ pub mod euclidean;
 pub mod event;
 pub mod input;
 pub mod output;
-pub mod track;
+pub mod step_sequencer;

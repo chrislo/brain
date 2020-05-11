@@ -39,7 +39,7 @@ pub fn update(current_context: &Context, next_context: &Context) {
 
 fn active_pads(context: &Context) -> HashSet<i32> {
     context
-        .track
+        .step_sequencer
         .active_sixteenths_with_note_number(context.active_note_number)
         .iter()
         .map(|s| sixteenth_to_note_number(*s))
@@ -93,7 +93,7 @@ fn message_to_addr(message: String) -> String {
 use crate::input::Message;
 
 #[cfg(test)]
-use crate::track::Track;
+use crate::step_sequencer::StepSequencer;
 
 #[test]
 fn test_message_to_addr() {
@@ -103,7 +103,7 @@ fn test_message_to_addr() {
 #[test]
 fn test_active_pads() {
     let context = Context {
-        track: Track::empty(),
+        step_sequencer: StepSequencer::empty(),
         active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,

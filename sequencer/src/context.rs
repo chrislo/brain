@@ -1,10 +1,10 @@
 use crate::event::Event;
 use crate::input::Message;
-use crate::track::Track;
+use crate::step_sequencer::StepSequencer;
 
 #[derive(Debug, Clone)]
 pub struct Context {
-    pub track: Track,
+    pub step_sequencer: StepSequencer,
     pub active_note_number: i32,
     pub swing_amount: i32,
     pub bpm: f32,
@@ -34,60 +34,61 @@ impl Context {
             if even_sixteenth(tick_number) {
                 vec![]
             } else if even_sixteenth(tick_number - swing_amount) {
-                self.track.events_for_tick(tick_number - swing_amount)
+                self.step_sequencer
+                    .events_for_tick(tick_number - swing_amount)
             } else {
-                self.track.events_for_tick(tick_number)
+                self.step_sequencer.events_for_tick(tick_number)
             }
         } else {
-            self.track.events_for_tick(tick_number)
+            self.step_sequencer.events_for_tick(tick_number)
         }
     }
 
     fn process_message(&self, message: &Message) -> Context {
         match message {
             Message::NoteOn { note_number: n } => {
-                let new_track = self
-                    .track
+                let new_step_sequencer = self
+                    .step_sequencer
                     .toggle_sixteenth(note_number_to_sixteenth(*n), self.active_note_number);
                 Context {
-                    track: new_track,
+                    step_sequencer: new_step_sequencer,
                     active_note_number: self.active_note_number,
                     swing_amount: self.swing_amount,
                     bpm: self.bpm,
                 }
             }
             Message::Left => Context {
-                track: self.track.clone(),
+                step_sequencer: self.step_sequencer.clone(),
                 active_note_number: self.active_note_number - 1,
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
             },
             Message::Right => Context {
-                track: self.track.clone(),
+                step_sequencer: self.step_sequencer.clone(),
                 active_note_number: self.active_note_number + 1,
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
             },
             Message::KnobIncrement { number: 1 } => Context {
-                track: self.track.clone(),
+                step_sequencer: self.step_sequencer.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: self.swing_amount,
                 bpm: (self.bpm + 1.0).min(240.0),
             },
             Message::KnobDecrement { number: 1 } => Context {
-                track: self.track.clone(),
+                step_sequencer: self.step_sequencer.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                 bpm: (self.bpm - 1.0).max(30.0),
             },
             Message::KnobIncrement { number: 2 } => Context {
-                track: self.track.clone(),
+                step_sequencer: self.step_sequencer.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::min(self.swing_amount + 1, 100),
                 bpm: self.bpm,
             },
             Message::KnobDecrement { number: 2 } => Context {
-                track: self.track.clone(),
+                step_sequencer: self.step_sequencer.clone(),
                 active_note_number: self.active_note_number,
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                 bpm: self.bpm,
@@ -127,10 +128,10 @@ fn test_even_sixteenth() {
 
 #[test]
 fn test_events() {
-    let track = Track::empty().toggle_sixteenth(2, 1);
+    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2, 1);
 
     let context = Context {
-        track: track,
+        step_sequencer: step_sequencer,
         active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
@@ -143,11 +144,11 @@ fn test_events() {
 
 #[test]
 fn test_events_with_swing() {
-    let track = Track::empty().toggle_sixteenth(2, 1);
+    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2, 1);
     let swing_amount = 20;
 
     let context = Context {
-        track: track,
+        step_sequencer: step_sequencer,
         active_note_number: 1,
         swing_amount: swing_amount,
         bpm: 120.0,
@@ -164,7 +165,7 @@ fn test_events_with_swing() {
 #[test]
 fn test_process_note_on_message() {
     let context = Context {
-        track: Track::empty(),
+        step_sequencer: StepSequencer::empty(),
         active_note_number: 2,
         swing_amount: 0,
         bpm: 120.0,
@@ -174,7 +175,7 @@ fn test_process_note_on_message() {
     let processed_context = context.process_messages(messages);
 
     let active_sixteenths = processed_context
-        .track
+        .step_sequencer
         .active_sixteenths_with_note_number(2);
     assert_eq!(1, active_sixteenths.len());
 }
@@ -182,7 +183,7 @@ fn test_process_note_on_message() {
 #[test]
 fn test_process_left_message() {
     let context = Context {
-        track: Track::empty(),
+        step_sequencer: StepSequencer::empty(),
         active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
@@ -199,7 +200,7 @@ fn test_process_left_message() {
 #[test]
 fn test_process_right_message() {
     let context = Context {
-        track: Track::empty(),
+        step_sequencer: StepSequencer::empty(),
         active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
@@ -212,7 +213,7 @@ fn test_process_right_message() {
 #[test]
 fn test_process_two_messages() {
     let context = Context {
-        track: Track::empty(),
+        step_sequencer: StepSequencer::empty(),
         active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
@@ -227,7 +228,7 @@ fn test_process_two_messages() {
     assert_eq!(
         2,
         processed_context
-            .track
+            .step_sequencer
             .active_sixteenths_with_note_number(1)
             .len()
     );
@@ -236,7 +237,7 @@ fn test_process_two_messages() {
 #[test]
 fn test_process_knob_1_bpm_set_message() {
     let context = Context {
-        track: Track::empty(),
+        step_sequencer: StepSequencer::empty(),
         active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
@@ -252,7 +253,7 @@ fn test_process_knob_1_bpm_set_message() {
 #[test]
 fn test_process_knob_2_swing_set_message() {
     let context = Context {
-        track: Track::empty(),
+        step_sequencer: StepSequencer::empty(),
         active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,

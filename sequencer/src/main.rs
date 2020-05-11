@@ -11,7 +11,7 @@ use sequencer::config;
 use sequencer::context::Context;
 use sequencer::input;
 use sequencer::output;
-use sequencer::track::Track;
+use sequencer::step_sequencer::StepSequencer;
 use std::time::Duration;
 
 fn main() {
@@ -24,7 +24,7 @@ fn main() {
         let mut current_tick_number = 0;
 
         let mut current_context = Context {
-            track: Track::empty(),
+            step_sequencer: StepSequencer::empty(),
             active_note_number: 1,
             swing_amount: 0,
             bpm: 120.0,

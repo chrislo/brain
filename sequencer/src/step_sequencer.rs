@@ -2,7 +2,7 @@ use crate::event::Event;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
-pub struct Track {
+pub struct StepSequencer {
     steps: HashSet<Step>,
 }
 
@@ -18,9 +18,9 @@ impl PartialEq for Step {
     }
 }
 
-impl Track {
-    pub fn empty() -> Track {
-        Track {
+impl StepSequencer {
+    pub fn empty() -> StepSequencer {
+        StepSequencer {
             steps: HashSet::new(),
         }
     }
@@ -39,7 +39,7 @@ impl Track {
             .collect()
     }
 
-    pub fn toggle_sixteenth(&self, sixteenth: i32, note_number: i32) -> Track {
+    pub fn toggle_sixteenth(&self, sixteenth: i32, note_number: i32) -> StepSequencer {
         let step = Step {
             tick: (sixteenth - 1) * 6,
             note_number: note_number,
@@ -47,7 +47,7 @@ impl Track {
         self.toggle_step(step)
     }
 
-    fn toggle_step(&self, step: Step) -> Track {
+    fn toggle_step(&self, step: Step) -> StepSequencer {
         let mut steps = self.steps.clone();
 
         if self.steps.contains(&step) {
@@ -55,7 +55,7 @@ impl Track {
         } else {
             steps.insert(step);
         }
-        Track { steps: steps }
+        StepSequencer { steps: steps }
     }
 
     pub fn active_sixteenths_with_note_number(&self, note_number: i32) -> HashSet<i32> {
@@ -67,7 +67,7 @@ impl Track {
 
 #[test]
 fn test_events_for_tick() {
-    let track = Track::empty()
+    let track = StepSequencer::empty()
         .toggle_sixteenth(1, 1)
         .toggle_sixteenth(5, 1)
         .toggle_sixteenth(9, 1)
@@ -90,14 +90,16 @@ fn test_events_for_tick() {
         }
     }
 
-    let track = Track::empty().toggle_sixteenth(1, 1).toggle_sixteenth(1, 2);
+    let track = StepSequencer::empty()
+        .toggle_sixteenth(1, 1)
+        .toggle_sixteenth(1, 2);
     let events = track.events_for_tick(0);
     assert_eq!(2, events.len());
 }
 
 #[test]
 fn test_toggle_sixteenth() {
-    let track = Track::empty();
+    let track = StepSequencer::empty();
 
     let processed_track = track.toggle_sixteenth(2, 1);
     assert_eq!(
@@ -114,7 +116,7 @@ fn test_toggle_sixteenth() {
 
 #[test]
 fn test_toggle_sixteenth_with_different_note_numbers() {
-    let track = Track::empty();
+    let track = StepSequencer::empty();
 
     let processed_track = track.toggle_sixteenth(2, 1);
     assert_eq!(
@@ -154,7 +156,7 @@ fn test_step_equality() {
 
 #[test]
 fn test_active_sixteenths_with_note_number() {
-    let active_sixteenths = Track::empty()
+    let active_sixteenths = StepSequencer::empty()
         .toggle_sixteenth(1, 1)
         .toggle_sixteenth(16, 2)
         .active_sixteenths_with_note_number(2);
