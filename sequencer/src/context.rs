@@ -29,19 +29,7 @@ impl Context {
     }
 
     pub fn events(&self, tick_number: i32) -> Vec<Event> {
-        let swing_amount = percentage_swing_to_ticks(self.swing_amount);
-        if swing_amount > 0 {
-            if even_sixteenth(tick_number) {
-                vec![]
-            } else if even_sixteenth(tick_number - swing_amount) {
-                self.step_sequencer
-                    .events_for_tick(tick_number - swing_amount)
-            } else {
-                self.step_sequencer.events_for_tick(tick_number)
-            }
-        } else {
-            self.step_sequencer.events_for_tick(tick_number)
-        }
+        swing(&self.step_sequencer, tick_number, self.swing_amount)
     }
 
     fn process_message(&self, message: &Message) -> Context {
@@ -110,6 +98,21 @@ fn percentage_swing_to_ticks(swing_percentage: i32) -> i32 {
     // Scale swing ticks between 0 and 6
     let max_ticks = 6.;
     (swing_percentage as f64 / (100. / max_ticks)).floor() as i32
+}
+
+fn swing(sequencer: &StepSequencer, tick_number: i32, swing_amount: i32) -> Vec<Event> {
+    let swing_amount = percentage_swing_to_ticks(swing_amount);
+    if swing_amount > 0 {
+        if even_sixteenth(tick_number) {
+            vec![]
+        } else if even_sixteenth(tick_number - swing_amount) {
+            sequencer.events_for_tick(tick_number - swing_amount)
+        } else {
+            sequencer.events_for_tick(tick_number)
+        }
+    } else {
+        sequencer.events_for_tick(tick_number)
+    }
 }
 
 #[test]
