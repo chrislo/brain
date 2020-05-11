@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct EuclideanSequencer {
-    pub patterns: HashMap<i32, Pattern>,
+    patterns: HashMap<i32, Pattern>,
 }
 
 impl EuclideanSequencer {
@@ -68,19 +68,6 @@ pub fn euclidean_pattern(pattern: Pattern) -> Vec<i32> {
 
     result.rotate_right(pattern.rotate);
     result
-}
-
-#[test]
-fn test_track_add_pattern() {
-    let track = EuclideanSequencer::empty();
-    let pattern = Pattern {
-        onsets: 4,
-        pulses: 16,
-        rotate: 0,
-    };
-
-    let new_track = track.add_pattern(1, &pattern);
-    assert_eq!(Some(&pattern), new_track.patterns.get(&1))
 }
 
 #[test]
