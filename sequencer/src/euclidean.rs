@@ -1,13 +1,13 @@
 pub struct Pattern {
-    onsets: i32,
-    pulses: i32,
+    onsets: usize,
+    pulses: usize,
     rotate: usize,
 }
 
 pub fn euclidean_pattern(pattern: Pattern) -> Vec<i32> {
     let slope = pattern.onsets as f32 / pattern.pulses as f32;
     let mut previous = 1;
-    let mut result = vec![0; pattern.pulses as usize];
+    let mut result = vec![0; pattern.pulses];
 
     if pattern.onsets == 0 {
         return result;
@@ -16,7 +16,7 @@ pub fn euclidean_pattern(pattern: Pattern) -> Vec<i32> {
     for i in 0..pattern.pulses {
         let current = (i as f32 * slope).floor() as i32;
         if current != previous {
-            result[i as usize] = 1;
+            result[i] = 1;
         }
         previous = current;
     }
