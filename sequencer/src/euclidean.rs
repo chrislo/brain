@@ -1,13 +1,19 @@
-pub fn euclidean_pattern(onsets: i32, pulses: i32, rotate: usize) -> Vec<i32> {
-    let slope = onsets as f32 / pulses as f32;
-    let mut previous = 1;
-    let mut result = vec![0; pulses as usize];
+pub struct Pattern {
+    onsets: i32,
+    pulses: i32,
+    rotate: usize,
+}
 
-    if onsets == 0 {
+pub fn euclidean_pattern(pattern: Pattern) -> Vec<i32> {
+    let slope = pattern.onsets as f32 / pattern.pulses as f32;
+    let mut previous = 1;
+    let mut result = vec![0; pattern.pulses as usize];
+
+    if pattern.onsets == 0 {
         return result;
     }
 
-    for i in 0..pulses {
+    for i in 0..pattern.pulses {
         let current = (i as f32 * slope).floor() as i32;
         if current != previous {
             result[i as usize] = 1;
@@ -15,27 +21,47 @@ pub fn euclidean_pattern(onsets: i32, pulses: i32, rotate: usize) -> Vec<i32> {
         previous = current;
     }
 
-    result.rotate_right(rotate);
+    result.rotate_right(pattern.rotate);
     result
 }
 
 #[test]
 fn test_euclidean_pattern() {
-    let pattern = euclidean_pattern(4, 16, 0);
+    let pattern = euclidean_pattern(Pattern {
+        onsets: 4,
+        pulses: 16,
+        rotate: 0,
+    });
     assert_eq!(
         pattern,
         vec!(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
     );
 
-    let pattern = euclidean_pattern(5, 12, 0);
+    let pattern = euclidean_pattern(Pattern {
+        onsets: 5,
+        pulses: 12,
+        rotate: 0,
+    });
     assert_eq!(pattern, vec!(1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0));
 
-    let pattern = euclidean_pattern(5, 12, 1);
+    let pattern = euclidean_pattern(Pattern {
+        onsets: 5,
+        pulses: 12,
+        rotate: 1,
+    });
     assert_eq!(pattern, vec!(0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1));
 
-    let pattern = euclidean_pattern(0, 4, 0);
+    let pattern = euclidean_pattern(Pattern {
+        onsets: 0,
+        pulses: 4,
+        rotate: 0,
+    });
     assert_eq!(pattern, vec!(0, 0, 0, 0));
 
-    let pattern = euclidean_pattern(4, 4, 0);
+    let pattern = euclidean_pattern(Pattern {
+        onsets: 4,
+        pulses: 4,
+        rotate: 0,
+    });
     assert_eq!(pattern, vec!(1, 1, 1, 1));
 }
