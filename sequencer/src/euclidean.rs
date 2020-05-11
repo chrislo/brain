@@ -1,4 +1,4 @@
-pub fn euclidean_pattern(onsets: i32, pulses: i32) -> Vec<i32> {
+pub fn euclidean_pattern(onsets: i32, pulses: i32, rotate: usize) -> Vec<i32> {
     let slope = onsets as f32 / pulses as f32;
     let mut previous = 1;
     let mut result = vec![0; pulses as usize];
@@ -14,23 +14,28 @@ pub fn euclidean_pattern(onsets: i32, pulses: i32) -> Vec<i32> {
         }
         previous = current;
     }
+
+    result.rotate_right(rotate);
     result
 }
 
 #[test]
 fn test_euclidean_pattern() {
-    let pattern = euclidean_pattern(4, 16);
+    let pattern = euclidean_pattern(4, 16, 0);
     assert_eq!(
         pattern,
         vec!(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
     );
 
-    let pattern = euclidean_pattern(5, 12);
+    let pattern = euclidean_pattern(5, 12, 0);
     assert_eq!(pattern, vec!(1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0));
 
-    let pattern = euclidean_pattern(0, 4);
+    let pattern = euclidean_pattern(5, 12, 1);
+    assert_eq!(pattern, vec!(0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1));
+
+    let pattern = euclidean_pattern(0, 4, 0);
     assert_eq!(pattern, vec!(0, 0, 0, 0));
 
-    let pattern = euclidean_pattern(4, 4);
+    let pattern = euclidean_pattern(4, 4, 0);
     assert_eq!(pattern, vec!(1, 1, 1, 1));
 }
