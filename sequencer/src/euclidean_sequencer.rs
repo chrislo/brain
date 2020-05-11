@@ -1,21 +1,21 @@
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct Track {
+pub struct EuclideanSequencer {
     pub patterns: HashMap<i32, Pattern>,
 }
 
-impl Track {
-    pub fn empty() -> Track {
-        Track {
+impl EuclideanSequencer {
+    pub fn empty() -> EuclideanSequencer {
+        EuclideanSequencer {
             patterns: HashMap::new(),
         }
     }
 
-    pub fn add_pattern(&self, note_number: i32, pattern: &Pattern) -> Track {
+    pub fn add_pattern(&self, note_number: i32, pattern: &Pattern) -> EuclideanSequencer {
         let mut patterns = self.patterns.clone();
         patterns.insert(note_number, *pattern);
-        Track { patterns: patterns }
+        EuclideanSequencer { patterns: patterns }
     }
 }
 
@@ -49,7 +49,7 @@ pub fn euclidean_pattern(pattern: Pattern) -> Vec<i32> {
 
 #[test]
 fn test_track_add_pattern() {
-    let track = Track::empty();
+    let track = EuclideanSequencer::empty();
     let pattern = Pattern {
         onsets: 4,
         pulses: 16,
