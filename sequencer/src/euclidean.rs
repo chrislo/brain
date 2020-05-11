@@ -1,3 +1,25 @@
+use std::collections::HashMap;
+
+#[derive(Debug)]
+pub struct Track {
+    pub patterns: HashMap<i32, Pattern>,
+}
+
+impl Track {
+    pub fn empty() -> Track {
+        Track {
+            patterns: HashMap::new(),
+        }
+    }
+
+    pub fn add_pattern(&self, note_number: i32, pattern: &Pattern) -> Track {
+        let mut patterns = self.patterns.clone();
+        patterns.insert(note_number, *pattern);
+        Track { patterns: patterns }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Pattern {
     onsets: usize,
     pulses: usize,
@@ -23,6 +45,19 @@ pub fn euclidean_pattern(pattern: Pattern) -> Vec<i32> {
 
     result.rotate_right(pattern.rotate);
     result
+}
+
+#[test]
+fn test_track_add_pattern() {
+    let track = Track::empty();
+    let pattern = Pattern {
+        onsets: 4,
+        pulses: 16,
+        rotate: 0,
+    };
+
+    let new_track = track.add_pattern(1, &pattern);
+    assert_eq!(Some(&pattern), new_track.patterns.get(&1))
 }
 
 #[test]
