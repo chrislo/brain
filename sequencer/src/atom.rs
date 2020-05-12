@@ -92,9 +92,6 @@ fn message_to_addr(message: String) -> String {
 #[cfg(test)]
 use crate::input::Message;
 
-#[cfg(test)]
-use crate::step_sequencer::StepSequencer;
-
 #[test]
 fn test_message_to_addr() {
     assert_eq!("/atom/note_on", message_to_addr("note_on".to_string()));
@@ -102,11 +99,7 @@ fn test_message_to_addr() {
 
 #[test]
 fn test_active_pads() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty(),
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default();
 
     let messages = vec![Message::NoteOn { note_number: 37 }];
     let processed_context = context.process_messages(messages);

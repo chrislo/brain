@@ -11,7 +11,6 @@ use sequencer::config;
 use sequencer::context::Context;
 use sequencer::input;
 use sequencer::output;
-use sequencer::step_sequencer::StepSequencer;
 use std::time::Duration;
 
 fn main() {
@@ -23,11 +22,7 @@ fn main() {
     thread::spawn(move || {
         let mut current_tick_number = 0;
 
-        let mut current_context = Context {
-            step_sequencer: StepSequencer::empty(),
-            swing_amount: 0,
-            bpm: 120.0,
-        };
+        let mut current_context = Context::default();
 
         loop {
             output::send_clock();

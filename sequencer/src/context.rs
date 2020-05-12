@@ -10,6 +10,14 @@ pub struct Context {
 }
 
 impl Context {
+    pub fn default() -> Context {
+        Context {
+            step_sequencer: StepSequencer::empty(),
+            swing_amount: 0,
+            bpm: 120.0,
+        }
+    }
+
     pub fn process_messages(&self, messages: Vec<Message>) -> Context {
         match messages.len() {
             0 => self.clone(),
@@ -157,11 +165,7 @@ fn test_events_with_swing() {
 
 #[test]
 fn test_process_note_on_message() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty(),
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default();
     let messages = vec![Message::NoteOn { note_number: 43 }];
 
     let processed_context = context.process_messages(messages);
@@ -172,11 +176,7 @@ fn test_process_note_on_message() {
 
 #[test]
 fn test_process_left_message() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty(),
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default();
 
     let processed_context = context.process_messages(vec![Message::Left]);
     assert_eq!(0, processed_context.step_sequencer.active_note_number);
@@ -188,11 +188,7 @@ fn test_process_left_message() {
 
 #[test]
 fn test_process_right_message() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty(),
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default();
 
     let processed_context = context.process_messages(vec![Message::Right]);
     assert_eq!(2, processed_context.step_sequencer.active_note_number);
@@ -200,11 +196,7 @@ fn test_process_right_message() {
 
 #[test]
 fn test_process_two_messages() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty(),
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default();
     let messages = vec![
         Message::NoteOn { note_number: 42 },
         Message::NoteOn { note_number: 43 },
@@ -220,11 +212,7 @@ fn test_process_two_messages() {
 
 #[test]
 fn test_process_knob_1_bpm_set_message() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty(),
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default();
 
     let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 1 }]);
     assert_eq!(121.0, processed_context.bpm);
@@ -235,11 +223,7 @@ fn test_process_knob_1_bpm_set_message() {
 
 #[test]
 fn test_process_knob_2_swing_set_message() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty(),
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default();
 
     let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 2 }]);
     assert_eq!(1, processed_context.swing_amount);
