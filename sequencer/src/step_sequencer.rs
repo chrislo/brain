@@ -63,7 +63,7 @@ impl StepSequencer {
         }
     }
 
-    pub fn active_sixteenths_with_note_number(&self) -> HashSet<i32> {
+    pub fn active_sixteenths(&self) -> HashSet<i32> {
         let mut steps = self.steps.clone();
         steps.retain(|&s| s.note_number == self.active_note_number);
         steps.into_iter().map(|s| (s.tick / 6) + 1).collect()
@@ -122,29 +122,17 @@ fn test_toggle_sixteenth() {
     let track = StepSequencer::empty();
 
     let processed_track = track.toggle_sixteenth(2);
-    assert_eq!(
-        1,
-        processed_track.active_sixteenths_with_note_number().len()
-    );
+    assert_eq!(1, processed_track.active_sixteenths().len());
 
     let processed_track = processed_track.toggle_sixteenth(2);
-    assert_eq!(
-        0,
-        processed_track.active_sixteenths_with_note_number().len()
-    );
+    assert_eq!(0, processed_track.active_sixteenths().len());
 }
 
 #[test]
 fn test_toggle_sixteenth_with_different_note_numbers() {
     let track = StepSequencer::empty();
 
-    assert_eq!(
-        1,
-        track
-            .toggle_sixteenth(2)
-            .active_sixteenths_with_note_number()
-            .len()
-    );
+    assert_eq!(1, track.toggle_sixteenth(2).active_sixteenths().len());
 
     assert_eq!(
         1,
@@ -152,7 +140,7 @@ fn test_toggle_sixteenth_with_different_note_numbers() {
             .toggle_sixteenth(1)
             .increment_active_note_number()
             .toggle_sixteenth(2)
-            .active_sixteenths_with_note_number()
+            .active_sixteenths()
             .len()
     );
 
@@ -163,7 +151,7 @@ fn test_toggle_sixteenth_with_different_note_numbers() {
             .increment_active_note_number()
             .toggle_sixteenth(2)
             .decrement_active_note_number()
-            .active_sixteenths_with_note_number()
+            .active_sixteenths()
             .len()
     );
 }
@@ -193,7 +181,7 @@ fn test_active_sixteenths_with_note_number() {
         .toggle_sixteenth(1)
         .increment_active_note_number()
         .toggle_sixteenth(16)
-        .active_sixteenths_with_note_number();
+        .active_sixteenths();
 
     assert_eq!(1, active_sixteenths.len());
     assert!(active_sixteenths.contains(&16));

@@ -166,9 +166,7 @@ fn test_process_note_on_message() {
 
     let processed_context = context.process_messages(messages);
 
-    let active_sixteenths = processed_context
-        .step_sequencer
-        .active_sixteenths_with_note_number();
+    let active_sixteenths = processed_context.step_sequencer.active_sixteenths();
     assert_eq!(1, active_sixteenths.len());
 }
 
@@ -216,10 +214,7 @@ fn test_process_two_messages() {
 
     assert_eq!(
         2,
-        processed_context
-            .step_sequencer
-            .active_sixteenths_with_note_number()
-            .len()
+        processed_context.step_sequencer.active_sixteenths().len()
     );
 }
 

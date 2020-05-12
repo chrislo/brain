@@ -40,7 +40,7 @@ pub fn update(current_context: &Context, next_context: &Context) {
 fn active_pads(context: &Context) -> HashSet<i32> {
     context
         .step_sequencer
-        .active_sixteenths_with_note_number()
+        .active_sixteenths()
         .iter()
         .map(|s| sixteenth_to_note_number(*s))
         .collect()
