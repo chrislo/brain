@@ -9,6 +9,7 @@ pub enum Message {
     KnobDecrement { number: i32 },
     Left,
     Right,
+    Select,
     Unhandled,
 }
 
@@ -51,6 +52,8 @@ fn parse_incoming_osc_message(packet: OscPacket) -> Message {
                             Message::Left
                         } else if *c == 102 && *v == 127 {
                             Message::Right
+                        } else if *c == 103 && *v == 127 {
+                            Message::Select
                         } else if *c >= 14 && *c <= 17 && *v == 1 {
                             Message::KnobIncrement { number: c - 13 }
                         } else if *c >= 14 && *c <= 17 && *v == 65 {
@@ -110,6 +113,16 @@ fn test_parse_incoming_right_message() {
     });
     let msg = parse_incoming_osc_message(packet);
     assert!(matches!(msg, Message::Right));
+}
+
+#[test]
+fn test_parse_incoming_select_message() {
+    let packet = OscPacket::Message(OscMessage {
+        addr: "/midi/atom/1/1/control_change".to_string(),
+        args: vec![rosc::OscType::Int(103), rosc::OscType::Int(127)],
+    });
+    let msg = parse_incoming_osc_message(packet);
+    assert!(matches!(msg, Message::Select));
 }
 
 #[test]
