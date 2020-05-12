@@ -75,7 +75,10 @@ impl Context {
 
     fn process_message(&self, message: &Message) -> Context {
         match self.mode {
-            Mode::Euclidean => self.clone(),
+            Mode::Euclidean => match message {
+                Message::Select => self.toggle_mode(),
+                _ => self.clone(),
+            },
             Mode::Step => match message {
                 Message::NoteOn { note_number: n } => {
                     let new_step_sequencer = self
