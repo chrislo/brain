@@ -12,6 +12,7 @@ pub struct Context {
 
 #[derive(Debug, Copy, Clone)]
 enum Mode {
+    Euclidean,
     Step,
 }
 
@@ -55,6 +56,23 @@ impl Context {
         }
     }
 
+    fn toggle_mode(&self) -> Context {
+        match self.mode {
+            Mode::Step => Context {
+                step_sequencer: self.step_sequencer.clone(),
+                swing_amount: self.swing_amount,
+                bpm: self.bpm,
+                mode: Mode::Euclidean,
+            },
+            Mode::Euclidean => Context {
+                step_sequencer: self.step_sequencer.clone(),
+                swing_amount: self.swing_amount,
+                bpm: self.bpm,
+                mode: Mode::Step,
+            },
+        }
+    }
+
     fn process_message(&self, message: &Message) -> Context {
         match message {
             Message::NoteOn { note_number: n } => {
@@ -69,6 +87,7 @@ impl Context {
             Message::Right => {
                 self.set_step_sequencer(self.step_sequencer.increment_active_note_number())
             }
+            Message::Select => self.toggle_mode(),
             Message::KnobIncrement { number: 1 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 swing_amount: self.swing_amount,
