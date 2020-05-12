@@ -53,6 +53,22 @@ impl EuclideanSequencer {
             active_note_number: self.active_note_number,
         }
     }
+
+    pub fn decrement_onsets(&self) -> EuclideanSequencer {
+        let mut patterns = self.patterns.clone();
+        let current_pattern = if patterns.contains_key(&self.active_note_number) {
+            *patterns.get(&self.active_note_number).unwrap()
+        } else {
+            Pattern::default()
+        };
+
+        patterns.insert(self.active_note_number, current_pattern.decrement_onsets());
+
+        EuclideanSequencer {
+            patterns: patterns,
+            active_note_number: self.active_note_number,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -74,6 +90,14 @@ impl Pattern {
     pub fn increment_onsets(&self) -> Pattern {
         Pattern {
             onsets: (self.onsets + 1).min(self.pulses),
+            pulses: self.pulses,
+            rotate: self.rotate,
+        }
+    }
+
+    pub fn decrement_onsets(&self) -> Pattern {
+        Pattern {
+            onsets: (self.onsets as i32 - 1).max(0) as usize,
             pulses: self.pulses,
             rotate: self.rotate,
         }
@@ -182,6 +206,15 @@ fn test_increment_onsets() {
 }
 
 #[test]
+fn test_decrement_onsets() {
+    let sequencer = EuclideanSequencer::empty()
+        .increment_onsets()
+        .decrement_onsets();
+    let events = sequencer.events_for_tick(0);
+    assert_eq!(0, events.len());
+}
+
+#[test]
 fn test_pattern_increment_onsets() {
     let pattern = Pattern {
         onsets: 1,
@@ -192,6 +225,19 @@ fn test_pattern_increment_onsets() {
 
     // It prevents onsets being incremented larger than pulses
     assert_eq!(2, pattern.increment_onsets().increment_onsets().onsets);
+}
+
+#[test]
+fn test_pattern_decrement_onsets() {
+    let pattern = Pattern {
+        onsets: 1,
+        pulses: 2,
+        rotate: 0,
+    };
+    assert_eq!(0, pattern.decrement_onsets().onsets);
+
+    // It prevents onsets being decremented lower than zero
+    assert_eq!(0, pattern.decrement_onsets().decrement_onsets().onsets);
 }
 
 #[test]
