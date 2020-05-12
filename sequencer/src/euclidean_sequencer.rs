@@ -40,11 +40,7 @@ impl EuclideanSequencer {
 
     pub fn increment_onsets(&self) -> EuclideanSequencer {
         let mut patterns = self.patterns.clone();
-        let current_pattern = if patterns.contains_key(&self.active_note_number) {
-            *patterns.get(&self.active_note_number).unwrap()
-        } else {
-            Pattern::default()
-        };
+        let current_pattern = self.current_or_default_pattern();
 
         patterns.insert(self.active_note_number, current_pattern.increment_onsets());
 
@@ -56,17 +52,21 @@ impl EuclideanSequencer {
 
     pub fn decrement_onsets(&self) -> EuclideanSequencer {
         let mut patterns = self.patterns.clone();
-        let current_pattern = if patterns.contains_key(&self.active_note_number) {
-            *patterns.get(&self.active_note_number).unwrap()
-        } else {
-            Pattern::default()
-        };
+        let current_pattern = self.current_or_default_pattern();
 
         patterns.insert(self.active_note_number, current_pattern.decrement_onsets());
 
         EuclideanSequencer {
             patterns: patterns,
             active_note_number: self.active_note_number,
+        }
+    }
+
+    fn current_or_default_pattern(&self) -> Pattern {
+        if self.patterns.contains_key(&self.active_note_number) {
+            *self.patterns.get(&self.active_note_number).unwrap()
+        } else {
+            Pattern::default()
         }
     }
 }
