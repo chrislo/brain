@@ -15,20 +15,12 @@ impl EuclideanSequencer {
 
     pub fn events_for_tick(&self, tick: i32) -> Vec<Event> {
         let mut events = vec![];
-        let ticks_per_sixteenth = 96 / 16 as i32;
 
         for (note_number, pattern) in self.patterns.iter() {
-            let pattern_length_in_ticks = ticks_per_sixteenth * pattern.pulses as i32;
-            let offset_into_pattern = tick % pattern_length_in_ticks;
-            let euclidean_pattern = pattern.euclidean_pattern();
-
-            if offset_into_pattern % ticks_per_sixteenth == 0 {
-                let idx = offset_into_pattern / ticks_per_sixteenth;
-                if euclidean_pattern[idx as usize] == 1 {
-                    events.push(Event {
-                        note_number: *note_number,
-                    })
-                }
+            if pattern.has_event_at_tick(tick) {
+                events.push(Event {
+                    note_number: *note_number,
+                });
             }
         }
 
@@ -50,7 +42,7 @@ pub struct Pattern {
 }
 
 impl Pattern {
-    pub fn euclidean_pattern(&self) -> Vec<i32> {
+    fn euclidean_pattern(&self) -> Vec<i32> {
         let slope = self.onsets as f32 / self.pulses as f32;
         let mut previous = 1;
         let mut result = vec![0; self.pulses];
@@ -69,6 +61,21 @@ impl Pattern {
 
         result.rotate_right(self.rotate);
         result
+    }
+
+    pub fn has_event_at_tick(&self, tick: i32) -> bool {
+        let ticks_per_sixteenth = 96 / 16 as i32;
+        let pattern_length_in_ticks = ticks_per_sixteenth * self.pulses as i32;
+        let offset_into_pattern = tick % pattern_length_in_ticks;
+
+        let euclidean_pattern = self.euclidean_pattern();
+
+        if offset_into_pattern % ticks_per_sixteenth == 0 {
+            let idx = offset_into_pattern / ticks_per_sixteenth;
+            euclidean_pattern[idx as usize] == 1
+        } else {
+            false
+        }
     }
 }
 
@@ -176,4 +183,22 @@ fn test_euclidean_pattern() {
         rotate: 0,
     };
     assert_eq!(pattern.euclidean_pattern(), vec!(1, 1, 1, 1));
+}
+
+#[test]
+fn test_pattern_has_events_at_tick() {
+    let pattern = Pattern {
+        onsets: 1,
+        pulses: 2,
+        rotate: 0,
+    };
+
+    assert_eq!(pattern.euclidean_pattern(), vec!(1, 0));
+
+    assert!(pattern.has_event_at_tick(0));
+    assert!(pattern.has_event_at_tick(12));
+
+    for n in 1..12 {
+        assert!(!pattern.has_event_at_tick(n));
+    }
 }
