@@ -1,15 +1,17 @@
 use crate::event::Event;
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct EuclideanSequencer {
     patterns: HashMap<i32, Pattern>,
+    active_note_number: i32,
 }
 
 impl EuclideanSequencer {
     pub fn empty() -> EuclideanSequencer {
         EuclideanSequencer {
             patterns: HashMap::new(),
+            active_note_number: 1,
         }
     }
 
@@ -30,7 +32,26 @@ impl EuclideanSequencer {
     pub fn add_pattern(&self, note_number: i32, pattern: &Pattern) -> EuclideanSequencer {
         let mut patterns = self.patterns.clone();
         patterns.insert(note_number, *pattern);
-        EuclideanSequencer { patterns: patterns }
+        EuclideanSequencer {
+            patterns: patterns,
+            active_note_number: self.active_note_number,
+        }
+    }
+
+    pub fn increment_onsets(&self) -> EuclideanSequencer {
+        let mut patterns = self.patterns.clone();
+        let current_pattern = if patterns.contains_key(&self.active_note_number) {
+            *patterns.get(&self.active_note_number).unwrap()
+        } else {
+            Pattern::default()
+        };
+
+        patterns.insert(self.active_note_number, current_pattern.increment_onsets());
+
+        EuclideanSequencer {
+            patterns: patterns,
+            active_note_number: self.active_note_number,
+        }
     }
 }
 
@@ -42,6 +63,22 @@ pub struct Pattern {
 }
 
 impl Pattern {
+    pub fn default() -> Pattern {
+        Pattern {
+            onsets: 0,
+            pulses: 16,
+            rotate: 0,
+        }
+    }
+
+    pub fn increment_onsets(&self) -> Pattern {
+        Pattern {
+            onsets: (self.onsets + 1).min(self.pulses),
+            pulses: self.pulses,
+            rotate: self.rotate,
+        }
+    }
+
     fn euclidean_pattern(&self) -> Vec<i32> {
         let slope = self.onsets as f32 / self.pulses as f32;
         let mut previous = 1;
@@ -135,6 +172,26 @@ fn test_events_for_tick_with_multiple_patterns() {
             assert!(events.is_empty());
         }
     }
+}
+
+#[test]
+fn test_increment_onsets() {
+    let sequencer = EuclideanSequencer::empty().increment_onsets();
+    let events = sequencer.events_for_tick(0);
+    assert_eq!(1, events.len());
+}
+
+#[test]
+fn test_pattern_increment_onsets() {
+    let pattern = Pattern {
+        onsets: 1,
+        pulses: 2,
+        rotate: 0,
+    };
+    assert_eq!(2, pattern.increment_onsets().onsets);
+
+    // It prevents onsets being incremented larger than pulses
+    assert_eq!(2, pattern.increment_onsets().increment_onsets().onsets);
 }
 
 #[test]
