@@ -7,6 +7,12 @@ pub struct Context {
     pub step_sequencer: StepSequencer,
     pub swing_amount: i32,
     pub bpm: f32,
+    mode: Mode,
+}
+
+#[derive(Debug, Copy, Clone)]
+enum Mode {
+    Step,
 }
 
 impl Context {
@@ -15,6 +21,7 @@ impl Context {
             step_sequencer: StepSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
+            mode: Mode::Step,
         }
     }
 
@@ -44,6 +51,7 @@ impl Context {
             step_sequencer: step_sequencer,
             swing_amount: self.swing_amount,
             bpm: self.bpm,
+            mode: self.mode,
         }
     }
 
@@ -65,21 +73,25 @@ impl Context {
                 step_sequencer: self.step_sequencer.clone(),
                 swing_amount: self.swing_amount,
                 bpm: (self.bpm + 1.0).min(240.0),
+                mode: self.mode,
             },
             Message::KnobDecrement { number: 1 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
-                swing_amount: std::cmp::max(self.swing_amount - 1, 0),
+                swing_amount: self.swing_amount,
                 bpm: (self.bpm - 1.0).max(30.0),
+                mode: self.mode,
             },
             Message::KnobIncrement { number: 2 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 swing_amount: std::cmp::min(self.swing_amount + 1, 100),
                 bpm: self.bpm,
+                mode: self.mode,
             },
             Message::KnobDecrement { number: 2 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                 bpm: self.bpm,
+                mode: self.mode,
             },
             _ => self.clone(),
         }
@@ -132,12 +144,7 @@ fn test_even_sixteenth() {
 #[test]
 fn test_events() {
     let step_sequencer = StepSequencer::empty().toggle_sixteenth(2);
-
-    let context = Context {
-        step_sequencer: step_sequencer,
-        swing_amount: 0,
-        bpm: 120.0,
-    };
+    let context = Context::default().set_step_sequencer(step_sequencer);
 
     let events = context.events(6);
     assert_eq!(1, events.len());
@@ -153,6 +160,7 @@ fn test_events_with_swing() {
         step_sequencer: step_sequencer,
         swing_amount: swing_amount,
         bpm: 120.0,
+        mode: Mode::Step,
     };
 
     let events = context.events(6);
