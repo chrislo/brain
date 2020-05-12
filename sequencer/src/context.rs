@@ -39,28 +39,28 @@ impl Context {
         swing(&self.step_sequencer, tick_number, self.swing_amount)
     }
 
+    fn set_step_sequencer(&self, step_sequencer: StepSequencer) -> Context {
+        Context {
+            step_sequencer: step_sequencer,
+            swing_amount: self.swing_amount,
+            bpm: self.bpm,
+        }
+    }
+
     fn process_message(&self, message: &Message) -> Context {
         match message {
             Message::NoteOn { note_number: n } => {
                 let new_step_sequencer = self
                     .step_sequencer
                     .toggle_sixteenth(note_number_to_sixteenth(*n));
-                Context {
-                    step_sequencer: new_step_sequencer,
-                    swing_amount: self.swing_amount,
-                    bpm: self.bpm,
-                }
+                self.set_step_sequencer(new_step_sequencer)
             }
-            Message::Left => Context {
-                step_sequencer: self.step_sequencer.decrement_active_note_number(),
-                swing_amount: self.swing_amount,
-                bpm: self.bpm,
-            },
-            Message::Right => Context {
-                step_sequencer: self.step_sequencer.increment_active_note_number(),
-                swing_amount: self.swing_amount,
-                bpm: self.bpm,
-            },
+            Message::Left => {
+                self.set_step_sequencer(self.step_sequencer.decrement_active_note_number())
+            }
+            Message::Right => {
+                self.set_step_sequencer(self.step_sequencer.increment_active_note_number())
+            }
             Message::KnobIncrement { number: 1 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 swing_amount: self.swing_amount,
