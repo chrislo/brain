@@ -1,3 +1,4 @@
+use crate::euclidean_sequencer::EuclideanSequencer;
 use crate::event::Event;
 use crate::input::Message;
 use crate::step_sequencer::StepSequencer;
@@ -5,6 +6,7 @@ use crate::step_sequencer::StepSequencer;
 #[derive(Debug, Clone)]
 pub struct Context {
     pub step_sequencer: StepSequencer,
+    pub euclidean_sequencer: EuclideanSequencer,
     pub swing_amount: i32,
     pub bpm: f32,
     mode: Mode,
@@ -20,6 +22,7 @@ impl Context {
     pub fn default() -> Context {
         Context {
             step_sequencer: StepSequencer::empty(),
+            euclidean_sequencer: EuclideanSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
             mode: Mode::Step,
@@ -50,6 +53,7 @@ impl Context {
     fn set_step_sequencer(&self, step_sequencer: StepSequencer) -> Context {
         Context {
             step_sequencer: step_sequencer,
+            euclidean_sequencer: self.euclidean_sequencer.clone(),
             swing_amount: self.swing_amount,
             bpm: self.bpm,
             mode: self.mode,
@@ -60,12 +64,14 @@ impl Context {
         match self.mode {
             Mode::Step => Context {
                 step_sequencer: self.step_sequencer.clone(),
+                euclidean_sequencer: self.euclidean_sequencer.clone(),
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
                 mode: Mode::Euclidean,
             },
             Mode::Euclidean => Context {
                 step_sequencer: self.step_sequencer.clone(),
+                euclidean_sequencer: self.euclidean_sequencer.clone(),
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
                 mode: Mode::Step,
@@ -95,24 +101,28 @@ impl Context {
                 Message::Select => self.toggle_mode(),
                 Message::KnobIncrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
+                    euclidean_sequencer: self.euclidean_sequencer.clone(),
                     swing_amount: self.swing_amount,
                     bpm: (self.bpm + 1.0).min(240.0),
                     mode: self.mode,
                 },
                 Message::KnobDecrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
+                    euclidean_sequencer: self.euclidean_sequencer.clone(),
                     swing_amount: self.swing_amount,
                     bpm: (self.bpm - 1.0).max(30.0),
                     mode: self.mode,
                 },
                 Message::KnobIncrement { number: 2 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
+                    euclidean_sequencer: self.euclidean_sequencer.clone(),
                     swing_amount: std::cmp::min(self.swing_amount + 1, 100),
                     bpm: self.bpm,
                     mode: self.mode,
                 },
                 Message::KnobDecrement { number: 2 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
+                    euclidean_sequencer: self.euclidean_sequencer.clone(),
                     swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                     bpm: self.bpm,
                     mode: self.mode,
@@ -183,6 +193,7 @@ fn test_events_with_swing() {
 
     let context = Context {
         step_sequencer: step_sequencer,
+        euclidean_sequencer: EuclideanSequencer::empty(),
         swing_amount: swing_amount,
         bpm: 120.0,
         mode: Mode::Step,
