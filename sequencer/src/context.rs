@@ -60,6 +60,16 @@ impl Context {
         }
     }
 
+    fn set_euclidean_sequencer(&self, euclidean_sequencer: EuclideanSequencer) -> Context {
+        Context {
+            step_sequencer: self.step_sequencer.clone(),
+            euclidean_sequencer: euclidean_sequencer,
+            swing_amount: self.swing_amount,
+            bpm: self.bpm,
+            mode: self.mode,
+        }
+    }
+
     fn toggle_mode(&self) -> Context {
         match self.mode {
             Mode::Step => Context {
@@ -83,6 +93,12 @@ impl Context {
         match self.mode {
             Mode::Euclidean => match message {
                 Message::Select => self.toggle_mode(),
+                Message::KnobIncrement { number: 1 } => {
+                    self.set_euclidean_sequencer(self.euclidean_sequencer.increment_onsets())
+                }
+                Message::KnobDecrement { number: 1 } => {
+                    self.set_euclidean_sequencer(self.euclidean_sequencer.decrement_onsets())
+                }
                 _ => self.clone(),
             },
             Mode::Step => match message {
