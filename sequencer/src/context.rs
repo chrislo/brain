@@ -74,45 +74,48 @@ impl Context {
     }
 
     fn process_message(&self, message: &Message) -> Context {
-        match message {
-            Message::NoteOn { note_number: n } => {
-                let new_step_sequencer = self
-                    .step_sequencer
-                    .toggle_sixteenth(note_number_to_sixteenth(*n));
-                self.set_step_sequencer(new_step_sequencer)
-            }
-            Message::Left => {
-                self.set_step_sequencer(self.step_sequencer.decrement_active_note_number())
-            }
-            Message::Right => {
-                self.set_step_sequencer(self.step_sequencer.increment_active_note_number())
-            }
-            Message::Select => self.toggle_mode(),
-            Message::KnobIncrement { number: 1 } => Context {
-                step_sequencer: self.step_sequencer.clone(),
-                swing_amount: self.swing_amount,
-                bpm: (self.bpm + 1.0).min(240.0),
-                mode: self.mode,
+        match self.mode {
+            Mode::Euclidean => self.clone(),
+            Mode::Step => match message {
+                Message::NoteOn { note_number: n } => {
+                    let new_step_sequencer = self
+                        .step_sequencer
+                        .toggle_sixteenth(note_number_to_sixteenth(*n));
+                    self.set_step_sequencer(new_step_sequencer)
+                }
+                Message::Left => {
+                    self.set_step_sequencer(self.step_sequencer.decrement_active_note_number())
+                }
+                Message::Right => {
+                    self.set_step_sequencer(self.step_sequencer.increment_active_note_number())
+                }
+                Message::Select => self.toggle_mode(),
+                Message::KnobIncrement { number: 1 } => Context {
+                    step_sequencer: self.step_sequencer.clone(),
+                    swing_amount: self.swing_amount,
+                    bpm: (self.bpm + 1.0).min(240.0),
+                    mode: self.mode,
+                },
+                Message::KnobDecrement { number: 1 } => Context {
+                    step_sequencer: self.step_sequencer.clone(),
+                    swing_amount: self.swing_amount,
+                    bpm: (self.bpm - 1.0).max(30.0),
+                    mode: self.mode,
+                },
+                Message::KnobIncrement { number: 2 } => Context {
+                    step_sequencer: self.step_sequencer.clone(),
+                    swing_amount: std::cmp::min(self.swing_amount + 1, 100),
+                    bpm: self.bpm,
+                    mode: self.mode,
+                },
+                Message::KnobDecrement { number: 2 } => Context {
+                    step_sequencer: self.step_sequencer.clone(),
+                    swing_amount: std::cmp::max(self.swing_amount - 1, 0),
+                    bpm: self.bpm,
+                    mode: self.mode,
+                },
+                _ => self.clone(),
             },
-            Message::KnobDecrement { number: 1 } => Context {
-                step_sequencer: self.step_sequencer.clone(),
-                swing_amount: self.swing_amount,
-                bpm: (self.bpm - 1.0).max(30.0),
-                mode: self.mode,
-            },
-            Message::KnobIncrement { number: 2 } => Context {
-                step_sequencer: self.step_sequencer.clone(),
-                swing_amount: std::cmp::min(self.swing_amount + 1, 100),
-                bpm: self.bpm,
-                mode: self.mode,
-            },
-            Message::KnobDecrement { number: 2 } => Context {
-                step_sequencer: self.step_sequencer.clone(),
-                swing_amount: std::cmp::max(self.swing_amount - 1, 0),
-                bpm: self.bpm,
-                mode: self.mode,
-            },
-            _ => self.clone(),
         }
     }
 }
