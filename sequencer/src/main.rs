@@ -25,7 +25,6 @@ fn main() {
 
         let mut current_context = Context {
             step_sequencer: StepSequencer::empty(),
-            active_note_number: 1,
             swing_amount: 0,
             bpm: 120.0,
         };

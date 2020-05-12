@@ -5,7 +5,6 @@ use crate::step_sequencer::StepSequencer;
 #[derive(Debug, Clone)]
 pub struct Context {
     pub step_sequencer: StepSequencer,
-    pub active_note_number: i32,
     pub swing_amount: i32,
     pub bpm: f32,
 }
@@ -37,47 +36,40 @@ impl Context {
             Message::NoteOn { note_number: n } => {
                 let new_step_sequencer = self
                     .step_sequencer
-                    .toggle_sixteenth(note_number_to_sixteenth(*n), self.active_note_number);
+                    .toggle_sixteenth(note_number_to_sixteenth(*n));
                 Context {
                     step_sequencer: new_step_sequencer,
-                    active_note_number: self.active_note_number,
                     swing_amount: self.swing_amount,
                     bpm: self.bpm,
                 }
             }
             Message::Left => Context {
-                step_sequencer: self.step_sequencer.clone(),
-                active_note_number: self.active_note_number - 1,
+                step_sequencer: self.step_sequencer.decrement_active_note_number(),
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
             },
             Message::Right => Context {
-                step_sequencer: self.step_sequencer.clone(),
-                active_note_number: self.active_note_number + 1,
+                step_sequencer: self.step_sequencer.increment_active_note_number(),
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
             },
             Message::KnobIncrement { number: 1 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
-                active_note_number: self.active_note_number,
                 swing_amount: self.swing_amount,
                 bpm: (self.bpm + 1.0).min(240.0),
             },
             Message::KnobDecrement { number: 1 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
-                active_note_number: self.active_note_number,
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                 bpm: (self.bpm - 1.0).max(30.0),
             },
             Message::KnobIncrement { number: 2 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
-                active_note_number: self.active_note_number,
                 swing_amount: std::cmp::min(self.swing_amount + 1, 100),
                 bpm: self.bpm,
             },
             Message::KnobDecrement { number: 2 } => Context {
                 step_sequencer: self.step_sequencer.clone(),
-                active_note_number: self.active_note_number,
                 swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                 bpm: self.bpm,
             },
@@ -131,11 +123,10 @@ fn test_even_sixteenth() {
 
 #[test]
 fn test_events() {
-    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2, 1);
+    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2);
 
     let context = Context {
         step_sequencer: step_sequencer,
-        active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
     };
@@ -147,12 +138,11 @@ fn test_events() {
 
 #[test]
 fn test_events_with_swing() {
-    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2, 1);
+    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2);
     let swing_amount = 20;
 
     let context = Context {
         step_sequencer: step_sequencer,
-        active_note_number: 1,
         swing_amount: swing_amount,
         bpm: 120.0,
     };
@@ -169,7 +159,6 @@ fn test_events_with_swing() {
 fn test_process_note_on_message() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
-        active_note_number: 2,
         swing_amount: 0,
         bpm: 120.0,
     };
@@ -179,7 +168,7 @@ fn test_process_note_on_message() {
 
     let active_sixteenths = processed_context
         .step_sequencer
-        .active_sixteenths_with_note_number(2);
+        .active_sixteenths_with_note_number();
     assert_eq!(1, active_sixteenths.len());
 }
 
@@ -187,37 +176,34 @@ fn test_process_note_on_message() {
 fn test_process_left_message() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
-        active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
     };
 
     let processed_context = context.process_messages(vec![Message::Left]);
-    assert_eq!(0, processed_context.active_note_number);
+    assert_eq!(0, processed_context.step_sequencer.active_note_number);
 
     // We don't allow the number to go below zero
     let processed_context = context.process_messages(vec![Message::Left]);
-    assert_eq!(0, processed_context.active_note_number);
+    assert_eq!(0, processed_context.step_sequencer.active_note_number);
 }
 
 #[test]
 fn test_process_right_message() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
-        active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
     };
 
     let processed_context = context.process_messages(vec![Message::Right]);
-    assert_eq!(2, processed_context.active_note_number);
+    assert_eq!(2, processed_context.step_sequencer.active_note_number);
 }
 
 #[test]
 fn test_process_two_messages() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
-        active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
     };
@@ -232,7 +218,7 @@ fn test_process_two_messages() {
         2,
         processed_context
             .step_sequencer
-            .active_sixteenths_with_note_number(1)
+            .active_sixteenths_with_note_number()
             .len()
     );
 }
@@ -241,7 +227,6 @@ fn test_process_two_messages() {
 fn test_process_knob_1_bpm_set_message() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
-        active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
     };
@@ -257,7 +242,6 @@ fn test_process_knob_1_bpm_set_message() {
 fn test_process_knob_2_swing_set_message() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
-        active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
     };

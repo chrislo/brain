@@ -4,6 +4,7 @@ use std::collections::HashSet;
 #[derive(Debug, Clone)]
 pub struct StepSequencer {
     steps: HashSet<Step>,
+    pub active_note_number: i32,
 }
 
 #[derive(Clone, Copy, Debug, Hash, Eq)]
@@ -22,6 +23,7 @@ impl StepSequencer {
     pub fn empty() -> StepSequencer {
         StepSequencer {
             steps: HashSet::new(),
+            active_note_number: 1,
         }
     }
 
@@ -39,10 +41,10 @@ impl StepSequencer {
             .collect()
     }
 
-    pub fn toggle_sixteenth(&self, sixteenth: i32, note_number: i32) -> StepSequencer {
+    pub fn toggle_sixteenth(&self, sixteenth: i32) -> StepSequencer {
         let step = Step {
             tick: (sixteenth - 1) * 6,
-            note_number: note_number,
+            note_number: self.active_note_number,
         };
         self.toggle_step(step)
     }
@@ -55,23 +57,40 @@ impl StepSequencer {
         } else {
             steps.insert(step);
         }
-        StepSequencer { steps: steps }
+        StepSequencer {
+            steps: steps,
+            active_note_number: self.active_note_number,
+        }
     }
 
-    pub fn active_sixteenths_with_note_number(&self, note_number: i32) -> HashSet<i32> {
+    pub fn active_sixteenths_with_note_number(&self) -> HashSet<i32> {
         let mut steps = self.steps.clone();
-        steps.retain(|&s| s.note_number == note_number);
+        steps.retain(|&s| s.note_number == self.active_note_number);
         steps.into_iter().map(|s| (s.tick / 6) + 1).collect()
+    }
+
+    pub fn increment_active_note_number(&self) -> StepSequencer {
+        StepSequencer {
+            steps: self.steps.clone(),
+            active_note_number: self.active_note_number + 1,
+        }
+    }
+
+    pub fn decrement_active_note_number(&self) -> StepSequencer {
+        StepSequencer {
+            steps: self.steps.clone(),
+            active_note_number: self.active_note_number - 1,
+        }
     }
 }
 
 #[test]
 fn test_events_for_tick() {
     let track = StepSequencer::empty()
-        .toggle_sixteenth(1, 1)
-        .toggle_sixteenth(5, 1)
-        .toggle_sixteenth(9, 1)
-        .toggle_sixteenth(13, 1);
+        .toggle_sixteenth(1)
+        .toggle_sixteenth(5)
+        .toggle_sixteenth(9)
+        .toggle_sixteenth(13);
 
     for n in 0..96 {
         let events = track.events_for_tick(n);
@@ -91,8 +110,9 @@ fn test_events_for_tick() {
     }
 
     let track = StepSequencer::empty()
-        .toggle_sixteenth(1, 1)
-        .toggle_sixteenth(1, 2);
+        .toggle_sixteenth(1)
+        .increment_active_note_number()
+        .toggle_sixteenth(1);
     let events = track.events_for_tick(0);
     assert_eq!(2, events.len());
 }
@@ -101,16 +121,16 @@ fn test_events_for_tick() {
 fn test_toggle_sixteenth() {
     let track = StepSequencer::empty();
 
-    let processed_track = track.toggle_sixteenth(2, 1);
+    let processed_track = track.toggle_sixteenth(2);
     assert_eq!(
         1,
-        processed_track.active_sixteenths_with_note_number(1).len()
+        processed_track.active_sixteenths_with_note_number().len()
     );
 
-    let processed_track = processed_track.toggle_sixteenth(2, 1);
+    let processed_track = processed_track.toggle_sixteenth(2);
     assert_eq!(
         0,
-        processed_track.active_sixteenths_with_note_number(1).len()
+        processed_track.active_sixteenths_with_note_number().len()
     );
 }
 
@@ -118,20 +138,33 @@ fn test_toggle_sixteenth() {
 fn test_toggle_sixteenth_with_different_note_numbers() {
     let track = StepSequencer::empty();
 
-    let processed_track = track.toggle_sixteenth(2, 1);
     assert_eq!(
         1,
-        processed_track.active_sixteenths_with_note_number(1).len()
+        track
+            .toggle_sixteenth(2)
+            .active_sixteenths_with_note_number()
+            .len()
     );
 
-    let processed_track = processed_track.toggle_sixteenth(2, 2);
     assert_eq!(
         1,
-        processed_track.active_sixteenths_with_note_number(1).len()
+        track
+            .toggle_sixteenth(1)
+            .increment_active_note_number()
+            .toggle_sixteenth(2)
+            .active_sixteenths_with_note_number()
+            .len()
     );
+
     assert_eq!(
         1,
-        processed_track.active_sixteenths_with_note_number(2).len()
+        track
+            .toggle_sixteenth(1)
+            .increment_active_note_number()
+            .toggle_sixteenth(2)
+            .decrement_active_note_number()
+            .active_sixteenths_with_note_number()
+            .len()
     );
 }
 
@@ -157,9 +190,10 @@ fn test_step_equality() {
 #[test]
 fn test_active_sixteenths_with_note_number() {
     let active_sixteenths = StepSequencer::empty()
-        .toggle_sixteenth(1, 1)
-        .toggle_sixteenth(16, 2)
-        .active_sixteenths_with_note_number(2);
+        .toggle_sixteenth(1)
+        .increment_active_note_number()
+        .toggle_sixteenth(16)
+        .active_sixteenths_with_note_number();
 
     assert_eq!(1, active_sixteenths.len());
     assert!(active_sixteenths.contains(&16));

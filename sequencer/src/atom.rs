@@ -40,7 +40,7 @@ pub fn update(current_context: &Context, next_context: &Context) {
 fn active_pads(context: &Context) -> HashSet<i32> {
     context
         .step_sequencer
-        .active_sixteenths_with_note_number(context.active_note_number)
+        .active_sixteenths_with_note_number()
         .iter()
         .map(|s| sixteenth_to_note_number(*s))
         .collect()
@@ -104,19 +104,19 @@ fn test_message_to_addr() {
 fn test_active_pads() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
-        active_note_number: 1,
         swing_amount: 0,
         bpm: 120.0,
     };
 
     let messages = vec![Message::NoteOn { note_number: 37 }];
-    let mut processed_context = context.process_messages(messages);
+    let processed_context = context.process_messages(messages);
 
     assert_eq!(1, active_pads(&processed_context).len());
     assert!(active_pads(&processed_context).contains(&37));
 
     // active_note_number was 1 when steps added, so no pads active
     // when we increment the active_note_number
-    processed_context.active_note_number = 2;
+    let messages = vec![Message::Right];
+    let processed_context = processed_context.process_messages(messages);
     assert_eq!(0, active_pads(&processed_context).len());
 }
