@@ -110,6 +110,12 @@ impl Context {
                 Message::KnobDecrement { number: 1 } => {
                     self.set_euclidean_sequencer(self.euclidean_sequencer.decrement_onsets())
                 }
+                Message::KnobIncrement { number: 2 } => {
+                    self.set_euclidean_sequencer(self.euclidean_sequencer.increment_pulses())
+                }
+                Message::KnobDecrement { number: 2 } => {
+                    self.set_euclidean_sequencer(self.euclidean_sequencer.decrement_pulses())
+                }
                 _ => self.clone(),
             },
             Mode::Step => match message {

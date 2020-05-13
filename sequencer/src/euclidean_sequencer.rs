@@ -62,6 +62,30 @@ impl EuclideanSequencer {
         }
     }
 
+    pub fn increment_pulses(&self) -> EuclideanSequencer {
+        let mut patterns = self.patterns.clone();
+        let current_pattern = self.current_or_default_pattern();
+
+        patterns.insert(self.active_note_number, current_pattern.increment_pulses());
+
+        EuclideanSequencer {
+            patterns: patterns,
+            active_note_number: self.active_note_number,
+        }
+    }
+
+    pub fn decrement_pulses(&self) -> EuclideanSequencer {
+        let mut patterns = self.patterns.clone();
+        let current_pattern = self.current_or_default_pattern();
+
+        patterns.insert(self.active_note_number, current_pattern.decrement_pulses());
+
+        EuclideanSequencer {
+            patterns: patterns,
+            active_note_number: self.active_note_number,
+        }
+    }
+
     pub fn increment_active_note_number(&self) -> EuclideanSequencer {
         EuclideanSequencer {
             patterns: self.patterns.clone(),
@@ -113,6 +137,22 @@ impl Pattern {
         Pattern {
             onsets: (self.onsets as i32 - 1).max(0) as usize,
             pulses: self.pulses,
+            rotate: self.rotate,
+        }
+    }
+
+    pub fn increment_pulses(&self) -> Pattern {
+        Pattern {
+            onsets: self.onsets,
+            pulses: (self.pulses + 1).min(16),
+            rotate: self.rotate,
+        }
+    }
+
+    pub fn decrement_pulses(&self) -> Pattern {
+        Pattern {
+            onsets: self.onsets,
+            pulses: (self.pulses - 1).max(self.onsets),
             rotate: self.rotate,
         }
     }
