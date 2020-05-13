@@ -97,19 +97,31 @@ fn test_message_to_addr() {
     assert_eq!("/atom/note_on", message_to_addr("note_on".to_string()));
 }
 
+#[cfg(test)]
+use crate::step_sequencer::StepSequencer;
+
+#[cfg(test)]
+use crate::euclidean_sequencer::EuclideanSequencer;
+
+#[cfg(test)]
+use crate::context::Mode;
+
 #[test]
 fn test_active_pads() {
-    let context = Context::default();
+    let context = Context {
+        step_sequencer: StepSequencer::empty().toggle_sixteenth(2),
+        euclidean_sequencer: EuclideanSequencer::empty(),
+        swing_amount: 0,
+        bpm: 120.0,
+        mode: Mode::Step,
+    };
 
-    let messages = vec![Message::NoteOn { note_number: 37 }];
-    let processed_context = context.process_messages(messages);
-
-    assert_eq!(1, active_pads(&processed_context).len());
-    assert!(active_pads(&processed_context).contains(&37));
+    assert_eq!(1, active_pads(&context).len());
+    assert!(active_pads(&context).contains(&37));
 
     // active_note_number was 1 when steps added, so no pads active
     // when we increment the active_note_number
     let messages = vec![Message::Right];
-    let processed_context = processed_context.process_messages(messages);
+    let processed_context = context.process_messages(messages);
     assert_eq!(0, active_pads(&processed_context).len());
 }

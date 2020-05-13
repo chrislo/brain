@@ -9,11 +9,11 @@ pub struct Context {
     pub euclidean_sequencer: EuclideanSequencer,
     pub swing_amount: i32,
     pub bpm: f32,
-    mode: Mode,
+    pub mode: Mode,
 }
 
 #[derive(Debug, Copy, Clone)]
-enum Mode {
+pub enum Mode {
     Euclidean,
     Step,
 }
