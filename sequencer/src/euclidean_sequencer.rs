@@ -208,7 +208,7 @@ impl Pattern {
         Pattern {
             onsets: self.onsets,
             pulses: self.pulses,
-            rotate: (self.rotate - 1).max(0),
+            rotate: (self.rotate as i32 - 1).max(0) as usize,
         }
     }
 
@@ -365,6 +365,16 @@ fn test_pattern_decrement_onsets() {
 
     // It prevents onsets being decremented lower than zero
     assert_eq!(0, pattern.decrement_onsets().decrement_onsets().onsets);
+}
+
+#[test]
+fn test_pattern_decrement_rotate() {
+    let pattern = Pattern {
+        onsets: 0,
+        pulses: 1,
+        rotate: 0,
+    };
+    assert_eq!(0, pattern.decrement_rotate().rotate);
 }
 
 #[test]
