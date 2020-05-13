@@ -174,10 +174,12 @@ impl Pattern {
     }
 
     pub fn decrement_pulses(&self) -> Pattern {
+        let new_pulses = self.pulses - 1;
+
         Pattern {
-            onsets: self.onsets,
-            pulses: (self.pulses - 1).max(self.onsets),
-            rotate: self.rotate,
+            onsets: self.onsets.min(new_pulses),
+            pulses: new_pulses.max(1),
+            rotate: self.rotate.min(new_pulses),
         }
     }
 
@@ -332,6 +334,27 @@ fn test_pattern_decrement_onsets() {
 
     // It prevents onsets being decremented lower than zero
     assert_eq!(0, pattern.decrement_onsets().decrement_onsets().onsets);
+}
+
+#[test]
+fn test_pattern_decrement_pulses() {
+    let pattern = Pattern {
+        onsets: 1,
+        pulses: 16,
+        rotate: 0,
+    };
+    assert_eq!(15, pattern.decrement_pulses().pulses);
+
+    // Decrement onsets and rotate to new pulses level if decrementing
+    // pulses would make it smaller than the other two
+    let pattern = Pattern {
+        onsets: 3,
+        pulses: 3,
+        rotate: 3,
+    };
+    assert_eq!(2, pattern.decrement_pulses().onsets);
+    assert_eq!(2, pattern.decrement_pulses().pulses);
+    assert_eq!(2, pattern.decrement_pulses().rotate);
 }
 
 #[test]
