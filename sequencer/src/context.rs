@@ -47,7 +47,12 @@ impl Context {
     }
 
     pub fn events(&self, tick_number: i32) -> Vec<Event> {
-        swing(&self.step_sequencer, tick_number, self.swing_amount)
+        let mut events = vec![];
+        let mut step_sequencer_events = swing(&self.step_sequencer, tick_number, self.swing_amount);
+        let mut euclidean_sequencer_events = self.euclidean_sequencer.events_for_tick(tick_number);
+        events.append(&mut step_sequencer_events);
+        events.append(&mut euclidean_sequencer_events);
+        events
     }
 
     fn set_step_sequencer(&self, step_sequencer: StepSequencer) -> Context {
@@ -200,6 +205,23 @@ fn test_events() {
     let events = context.events(6);
     assert_eq!(1, events.len());
     assert_eq!(1, events[0].note_number);
+}
+
+#[test]
+fn test_events_with_two_sequencers() {
+    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2);
+    let euclidean_sequencer = EuclideanSequencer::empty().increment_onsets();
+    let context = Context::default()
+        .set_step_sequencer(step_sequencer)
+        .set_euclidean_sequencer(euclidean_sequencer);
+
+    let step_events = context.events(6);
+    assert_eq!(1, step_events.len());
+    assert_eq!(1, step_events[0].note_number);
+
+    let euclidean_events = context.events(0);
+    assert_eq!(1, euclidean_events.len());
+    assert_eq!(1, euclidean_events[0].note_number);
 }
 
 #[test]
