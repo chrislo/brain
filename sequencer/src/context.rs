@@ -98,6 +98,12 @@ impl Context {
         match self.mode {
             Mode::Euclidean => match message {
                 Message::Select => self.toggle_mode(),
+                Message::Left => self.set_euclidean_sequencer(
+                    self.euclidean_sequencer.decrement_active_note_number(),
+                ),
+                Message::Right => self.set_euclidean_sequencer(
+                    self.euclidean_sequencer.increment_active_note_number(),
+                ),
                 Message::KnobIncrement { number: 1 } => {
                     self.set_euclidean_sequencer(self.euclidean_sequencer.increment_onsets())
                 }

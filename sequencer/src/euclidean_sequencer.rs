@@ -62,6 +62,20 @@ impl EuclideanSequencer {
         }
     }
 
+    pub fn increment_active_note_number(&self) -> EuclideanSequencer {
+        EuclideanSequencer {
+            patterns: self.patterns.clone(),
+            active_note_number: self.active_note_number + 1,
+        }
+    }
+
+    pub fn decrement_active_note_number(&self) -> EuclideanSequencer {
+        EuclideanSequencer {
+            patterns: self.patterns.clone(),
+            active_note_number: self.active_note_number - 1,
+        }
+    }
+
     fn current_or_default_pattern(&self) -> Pattern {
         if self.patterns.contains_key(&self.active_note_number) {
             *self.patterns.get(&self.active_note_number).unwrap()
