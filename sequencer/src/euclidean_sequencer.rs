@@ -1,5 +1,6 @@
 use crate::event::Event;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
 pub struct EuclideanSequencer {
@@ -131,6 +132,18 @@ impl EuclideanSequencer {
             Pattern::default()
         }
     }
+
+    pub fn active_sixteenths(&self) -> HashSet<i32> {
+        let pattern = self.current_or_default_pattern().euclidean_pattern();
+        let mut active_sixteenths = HashSet::new();
+
+        for (idx, v) in pattern.iter().enumerate() {
+            if *v == 1 {
+                active_sixteenths.insert((idx + 1) as i32);
+            }
+        }
+        active_sixteenths
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -234,6 +247,24 @@ impl Pattern {
             false
         }
     }
+}
+
+#[test]
+fn test_active_sixteenths() {
+    let pattern = Pattern {
+        onsets: 1,
+        pulses: 2,
+        rotate: 0,
+    };
+
+    assert_eq!(pattern.euclidean_pattern(), vec!(1, 0));
+
+    let active_sixteenths = EuclideanSequencer::empty()
+        .add_pattern(1, &pattern)
+        .active_sixteenths();
+
+    assert_eq!(1, active_sixteenths.len());
+    assert!(active_sixteenths.contains(&1));
 }
 
 #[test]

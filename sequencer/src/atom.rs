@@ -1,5 +1,5 @@
 use crate::config;
-use crate::context::Context;
+use crate::context::{Context, Mode};
 use crate::output;
 use rosc::encoder;
 use rosc::{OscMessage, OscPacket};
@@ -38,9 +38,12 @@ pub fn update(current_context: &Context, next_context: &Context) {
 }
 
 fn active_pads(context: &Context) -> HashSet<i32> {
-    context
-        .step_sequencer
-        .active_sixteenths()
+    let active_sixteenths = match context.mode {
+        Mode::Step => context.step_sequencer.active_sixteenths(),
+        Mode::Euclidean => context.euclidean_sequencer.active_sixteenths(),
+    };
+
+    active_sixteenths
         .iter()
         .map(|s| sixteenth_to_note_number(*s))
         .collect()
@@ -103,11 +106,8 @@ use crate::step_sequencer::StepSequencer;
 #[cfg(test)]
 use crate::euclidean_sequencer::EuclideanSequencer;
 
-#[cfg(test)]
-use crate::context::Mode;
-
 #[test]
-fn test_active_pads() {
+fn test_active_pads_step_sequencer() {
     let context = Context {
         step_sequencer: StepSequencer::empty().toggle_sixteenth(2),
         euclidean_sequencer: EuclideanSequencer::empty(),
@@ -118,6 +118,26 @@ fn test_active_pads() {
 
     assert_eq!(1, active_pads(&context).len());
     assert!(active_pads(&context).contains(&37));
+
+    // active_note_number was 1 when steps added, so no pads active
+    // when we increment the active_note_number
+    let messages = vec![Message::Right];
+    let processed_context = context.process_messages(messages);
+    assert_eq!(0, active_pads(&processed_context).len());
+}
+
+#[test]
+fn test_active_pads_euclidean_sequencer() {
+    let context = Context {
+        step_sequencer: StepSequencer::empty(),
+        euclidean_sequencer: EuclideanSequencer::empty().increment_onsets(),
+        swing_amount: 0,
+        bpm: 120.0,
+        mode: Mode::Euclidean,
+    };
+
+    assert_eq!(1, active_pads(&context).len());
+    assert!(active_pads(&context).contains(&36));
 
     // active_note_number was 1 when steps added, so no pads active
     // when we increment the active_note_number
