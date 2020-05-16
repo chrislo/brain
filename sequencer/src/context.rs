@@ -48,6 +48,12 @@ impl Context {
         }
     }
 
+    pub fn advance_tick(&self) -> Context {
+        let mut new_context = self.clone();
+        new_context.tick += 1;
+        new_context
+    }
+
     pub fn events(&self, tick_number: i32) -> Vec<Event> {
         let mut events = vec![];
         let mut step_sequencer_events = swing(&self.step_sequencer, tick_number, self.swing_amount);
@@ -233,6 +239,13 @@ fn test_events() {
     let events = context.events(6);
     assert_eq!(1, events.len());
     assert_eq!(1, events[0].note_number);
+}
+
+#[test]
+fn test_advance_tick() {
+    let context = Context::default();
+    assert_eq!(0, context.tick);
+    assert_eq!(1, context.advance_tick().tick);
 }
 
 #[test]
