@@ -30,7 +30,7 @@ fn main() {
             let now = Instant::now();
             let next_tick_number = current_tick_number + 1;
 
-            let events = current_context.events(current_tick_number);
+            let events = current_context.events();
             for event in events {
                 output::send_osc_to_sampler(event.to_osc_message());
             }
