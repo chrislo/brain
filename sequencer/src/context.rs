@@ -10,6 +10,7 @@ pub struct Context {
     pub swing_amount: i32,
     pub bpm: f32,
     pub mode: Mode,
+    pub tick: i32,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -26,6 +27,7 @@ impl Context {
             swing_amount: 0,
             bpm: 120.0,
             mode: Mode::Step,
+            tick: 0,
         }
     }
 
@@ -62,6 +64,7 @@ impl Context {
             swing_amount: self.swing_amount,
             bpm: self.bpm,
             mode: self.mode,
+            tick: self.tick,
         }
     }
 
@@ -72,6 +75,7 @@ impl Context {
             swing_amount: self.swing_amount,
             bpm: self.bpm,
             mode: self.mode,
+            tick: self.tick,
         }
     }
 
@@ -83,6 +87,7 @@ impl Context {
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
                 mode: Mode::Euclidean,
+                tick: self.tick,
             },
             Mode::Euclidean => Context {
                 step_sequencer: self.step_sequencer.clone(),
@@ -90,6 +95,7 @@ impl Context {
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
                 mode: Mode::Step,
+                tick: self.tick,
             },
         }
     }
@@ -144,6 +150,7 @@ impl Context {
                     swing_amount: self.swing_amount,
                     bpm: (self.bpm + 1.0).min(240.0),
                     mode: self.mode,
+                    tick: self.tick,
                 },
                 Message::KnobDecrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
@@ -151,6 +158,7 @@ impl Context {
                     swing_amount: self.swing_amount,
                     bpm: (self.bpm - 1.0).max(30.0),
                     mode: self.mode,
+                    tick: self.tick,
                 },
                 Message::KnobIncrement { number: 2 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
@@ -158,6 +166,7 @@ impl Context {
                     swing_amount: std::cmp::min(self.swing_amount + 1, 100),
                     bpm: self.bpm,
                     mode: self.mode,
+                    tick: self.tick,
                 },
                 Message::KnobDecrement { number: 2 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
@@ -165,6 +174,7 @@ impl Context {
                     swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                     bpm: self.bpm,
                     mode: self.mode,
+                    tick: self.tick,
                 },
                 _ => self.clone(),
             },
@@ -253,6 +263,7 @@ fn test_events_with_swing() {
         swing_amount: swing_amount,
         bpm: 120.0,
         mode: Mode::Step,
+        tick: 0,
     };
 
     let events = context.events(6);

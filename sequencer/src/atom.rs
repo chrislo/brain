@@ -114,6 +114,7 @@ fn test_active_pads_step_sequencer() {
         swing_amount: 0,
         bpm: 120.0,
         mode: Mode::Step,
+        tick: 0,
     };
 
     assert_eq!(1, active_pads(&context).len());
@@ -134,6 +135,7 @@ fn test_active_pads_euclidean_sequencer() {
         swing_amount: 0,
         bpm: 120.0,
         mode: Mode::Euclidean,
+        tick: 0,
     };
 
     assert_eq!(1, active_pads(&context).len());
