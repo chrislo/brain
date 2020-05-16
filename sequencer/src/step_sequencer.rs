@@ -82,6 +82,14 @@ impl StepSequencer {
             active_note_number: self.active_note_number - 1,
         }
     }
+
+    pub fn current_position(&self, tick: i32) -> i32 {
+        let track_length_in_ticks = 96;
+        let offset_into_track = tick % track_length_in_ticks;
+        let ticks_per_sixteenth = 6;
+
+        (offset_into_track / ticks_per_sixteenth) + 1
+    }
 }
 
 #[test]
@@ -185,4 +193,15 @@ fn test_active_sixteenths_with_note_number() {
 
     assert_eq!(1, active_sixteenths.len());
     assert!(active_sixteenths.contains(&16));
+}
+
+#[test]
+fn test_current_position() {
+    let sequencer = StepSequencer::empty();
+
+    assert_eq!(1, sequencer.current_position(0));
+    assert_eq!(1, sequencer.current_position(1));
+    assert_eq!(2, sequencer.current_position(6));
+    assert_eq!(16, sequencer.current_position(95));
+    assert_eq!(1, sequencer.current_position(96));
 }
