@@ -144,6 +144,10 @@ impl EuclideanSequencer {
         }
         active_sixteenths
     }
+
+    pub fn current_position(&self, tick: i32) -> i32 {
+        self.current_or_default_pattern().current_position(tick)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -247,6 +251,14 @@ impl Pattern {
             false
         }
     }
+
+    pub fn current_position(&self, tick: i32) -> i32 {
+        let ticks_per_sixteenth = 96 / 16 as i32;
+        let pattern_length_in_ticks = ticks_per_sixteenth * self.pulses as i32;
+        let offset_into_pattern = tick % pattern_length_in_ticks;
+
+        (offset_into_pattern / ticks_per_sixteenth) + 1
+    }
 }
 
 #[test]
@@ -288,6 +300,23 @@ fn test_events_for_tick_with_single_pattern() {
             assert!(events.is_empty());
         }
     }
+}
+
+#[test]
+fn test_current_position() {
+    let pattern = Pattern {
+        onsets: 1,
+        pulses: 2,
+        rotate: 0,
+    };
+
+    assert_eq!(pattern.euclidean_pattern(), vec!(1, 0));
+
+    let sequencer = EuclideanSequencer::empty().add_pattern(1, &pattern);
+    assert_eq!(1, sequencer.current_position(0));
+    assert_eq!(1, sequencer.current_position(1));
+    assert_eq!(2, sequencer.current_position(6));
+    assert_eq!(1, sequencer.current_position(12));
 }
 
 #[test]
