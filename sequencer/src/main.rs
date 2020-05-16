@@ -36,7 +36,7 @@ fn main() {
             }
 
             let messages = r.try_iter().collect();
-            let next_context = current_context.process_messages(messages);
+            let next_context = current_context.process_messages(messages).advance_tick();
 
             atom::update(&current_context, &next_context);
 
