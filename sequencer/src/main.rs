@@ -20,15 +20,12 @@ fn main() {
     let (s, r) = unbounded();
 
     thread::spawn(move || {
-        let mut current_tick_number = 0;
-
         let mut current_context = Context::default();
 
         loop {
             output::send_clock();
 
             let now = Instant::now();
-            let next_tick_number = current_tick_number + 1;
 
             let events = current_context.events();
             for event in events {
@@ -44,7 +41,6 @@ fn main() {
             let sleep_time = tick_duration(current_context.bpm) - elapsed_time;
             thread::sleep(sleep_time);
 
-            current_tick_number = next_tick_number;
             current_context = next_context;
         }
     });
