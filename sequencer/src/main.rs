@@ -15,6 +15,8 @@ use sequencer::output::Output;
 use std::time::Duration;
 
 fn main() {
+    let o2m_output = Output::o2m();
+
     config::parse();
     atom::init();
 
@@ -24,7 +26,6 @@ fn main() {
         let mut current_context = Context::default();
 
         loop {
-            let o2m_output = Output::o2m();
             o2m_output.send(output::clock_packet());
 
             let now = Instant::now();
