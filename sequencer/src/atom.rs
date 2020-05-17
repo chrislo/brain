@@ -25,8 +25,11 @@ pub fn handshake() {
 }
 
 pub fn update(current_context: &Context, next_context: &Context) {
-    let current_context_active_pads = active_pads(current_context);
-    let next_context_active_pads = active_pads(next_context);
+    let mut current_context_active_pads = active_pads(current_context);
+    current_context_active_pads.insert(current_pad(current_context));
+
+    let mut next_context_active_pads = active_pads(next_context);
+    next_context_active_pads.insert(current_pad(next_context));
 
     for pad_added in next_context_active_pads.difference(&current_context_active_pads) {
         turn_light_on(*pad_added);
@@ -35,6 +38,14 @@ pub fn update(current_context: &Context, next_context: &Context) {
     for pad_removed in current_context_active_pads.difference(&next_context_active_pads) {
         turn_light_off(*pad_removed);
     }
+}
+
+fn current_pad(context: &Context) -> i32 {
+    let current_position = match context.mode {
+        Mode::Step => context.step_sequencer.current_position(context.tick),
+        Mode::Euclidean => context.euclidean_sequencer.current_position(context.tick),
+    };
+    sixteenth_to_note_number(current_position)
 }
 
 fn active_pads(context: &Context) -> HashSet<i32> {
