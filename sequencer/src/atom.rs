@@ -70,7 +70,7 @@ fn sixteenth_to_note_number(sixteenth: i32) -> i32 {
 
 fn turn_all_lights_off() {
     for n in 36..52 {
-        turn_light_off(n);
+        output::send_osc_to_o2m(turn_light_off_message(n));
     }
 }
 
@@ -84,10 +84,6 @@ fn turn_light_on_message(note_number: i32) -> Vec<u8> {
         ],
     }))
     .unwrap()
-}
-
-fn turn_light_off(note_number: i32) {
-    output::send_osc_to_o2m(turn_light_off_message(note_number));
 }
 
 fn turn_light_off_message(note_number: i32) -> Vec<u8> {
