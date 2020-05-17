@@ -29,11 +29,6 @@ impl Output {
     }
 }
 
-pub fn send_osc_to_sampler(packet: Vec<u8>) {
-    let output = Output::sampler();
-    output.send(packet);
-}
-
 pub fn send_osc_to_o2m(packet: Vec<u8>) {
     let output = Output::o2m();
     output.send(packet);

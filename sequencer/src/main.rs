@@ -32,7 +32,8 @@ fn main() {
 
             let events = current_context.events();
             for event in events {
-                output::send_osc_to_sampler(event.to_osc_message());
+                let sampler_output = Output::sampler();
+                sampler_output.send(event.to_osc_message());
             }
 
             let messages = r.try_iter().collect();
