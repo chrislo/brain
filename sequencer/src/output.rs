@@ -40,11 +40,14 @@ pub fn send_osc_to_o2m(packet: Vec<u8>) {
 }
 
 pub fn send_clock() {
-    let packet = encoder::encode(&OscPacket::Message(OscMessage {
+    let output = Output::o2m();
+    output.send(clock_packet());
+}
+
+pub fn clock_packet() -> Vec<u8> {
+    encoder::encode(&OscPacket::Message(OscMessage {
         addr: "/*/clock".to_string(),
         args: vec![],
     }))
-    .unwrap();
-
-    send_osc_to_o2m(packet);
+    .unwrap()
 }
