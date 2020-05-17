@@ -24,20 +24,24 @@ pub fn handshake() {
     output::send_osc_to_o2m(packet);
 }
 
-pub fn update(current_context: &Context, next_context: &Context) {
+pub fn update(current_context: &Context, next_context: &Context) -> Vec<Vec<u8>> {
     let mut current_context_active_pads = active_pads(current_context);
     current_context_active_pads.insert(current_pad(current_context));
 
     let mut next_context_active_pads = active_pads(next_context);
     next_context_active_pads.insert(current_pad(next_context));
 
+    let mut osc_messages = vec![];
+
     for pad_added in next_context_active_pads.difference(&current_context_active_pads) {
-        turn_light_on(*pad_added);
+        osc_messages.push(turn_light_on_message(*pad_added));
     }
 
     for pad_removed in current_context_active_pads.difference(&next_context_active_pads) {
-        turn_light_off(*pad_removed);
+        osc_messages.push(turn_light_off_message(*pad_removed));
     }
+
+    osc_messages
 }
 
 fn current_pad(context: &Context) -> i32 {
@@ -70,8 +74,8 @@ fn turn_all_lights_off() {
     }
 }
 
-fn turn_light_on(note_number: i32) {
-    let packet = encoder::encode(&OscPacket::Message(OscMessage {
+fn turn_light_on_message(note_number: i32) -> Vec<u8> {
+    encoder::encode(&OscPacket::Message(OscMessage {
         addr: message_to_addr("note_on".to_string()),
         args: vec![
             rosc::OscType::Int(1),
@@ -79,13 +83,15 @@ fn turn_light_on(note_number: i32) {
             rosc::OscType::Int(127),
         ],
     }))
-    .unwrap();
-
-    output::send_osc_to_o2m(packet);
+    .unwrap()
 }
 
 fn turn_light_off(note_number: i32) {
-    let packet = encoder::encode(&OscPacket::Message(OscMessage {
+    output::send_osc_to_o2m(turn_light_off_message(note_number));
+}
+
+fn turn_light_off_message(note_number: i32) -> Vec<u8> {
+    encoder::encode(&OscPacket::Message(OscMessage {
         addr: message_to_addr("note_on".to_string()),
         args: vec![
             rosc::OscType::Int(1),
@@ -93,9 +99,7 @@ fn turn_light_off(note_number: i32) {
             rosc::OscType::Int(0),
         ],
     }))
-    .unwrap();
-
-    output::send_osc_to_o2m(packet);
+    .unwrap()
 }
 
 fn message_to_addr(message: String) -> String {

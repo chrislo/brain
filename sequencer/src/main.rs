@@ -39,7 +39,10 @@ fn main() {
             let messages = r.try_iter().collect();
             let next_context = current_context.process_messages(messages).advance_tick();
 
-            atom::update(&current_context, &next_context);
+            let messages = atom::update(&current_context, &next_context);
+            for message in messages {
+                o2m_output.send(message);
+            }
 
             let elapsed_time = now.elapsed();
             let sleep_time = tick_duration(current_context.bpm) - elapsed_time;
