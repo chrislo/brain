@@ -16,6 +16,7 @@ use std::time::Duration;
 
 fn main() {
     let o2m_output = Output::o2m();
+    let sampler_output = Output::sampler();
 
     config::parse();
     atom::init();
@@ -32,7 +33,6 @@ fn main() {
 
             let events = current_context.events();
             for event in events {
-                let sampler_output = Output::sampler();
                 sampler_output.send(event.to_osc_message());
             }
 
