@@ -11,6 +11,7 @@ use sequencer::config;
 use sequencer::context::Context;
 use sequencer::input;
 use sequencer::output;
+use sequencer::output::Output;
 use std::time::Duration;
 
 fn main() {
@@ -23,7 +24,8 @@ fn main() {
         let mut current_context = Context::default();
 
         loop {
-            output::send_clock();
+            let o2m_output = Output::o2m();
+            o2m_output.send(output::clock_packet());
 
             let now = Instant::now();
 

@@ -4,7 +4,7 @@ use std::net::SocketAddrV4;
 use std::net::UdpSocket;
 use std::str::FromStr;
 
-struct Output {
+pub struct Output {
     socket: UdpSocket,
     to_addr: SocketAddrV4,
 }
@@ -37,11 +37,6 @@ pub fn send_osc_to_sampler(packet: Vec<u8>) {
 pub fn send_osc_to_o2m(packet: Vec<u8>) {
     let output = Output::o2m();
     output.send(packet);
-}
-
-pub fn send_clock() {
-    let output = Output::o2m();
-    output.send(clock_packet());
 }
 
 pub fn clock_packet() -> Vec<u8> {
