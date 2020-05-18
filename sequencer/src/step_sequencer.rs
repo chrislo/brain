@@ -23,7 +23,7 @@ impl StepSequencer {
     pub fn empty() -> StepSequencer {
         StepSequencer {
             steps: HashSet::new(),
-            active_note_number: 1,
+            active_note_number: 36,
         }
     }
 

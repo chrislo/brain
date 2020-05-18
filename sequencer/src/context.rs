@@ -261,7 +261,7 @@ fn test_events() {
 
     let events = context.events_for_tick(6);
     assert_eq!(1, events.len());
-    assert_eq!(1, events[0].note_number);
+    assert_eq!(36, events[0].note_number);
 }
 
 #[test]
@@ -281,7 +281,7 @@ fn test_events_with_two_sequencers() {
 
     let step_events = context.events_for_tick(6);
     assert_eq!(1, step_events.len());
-    assert_eq!(1, step_events[0].note_number);
+    assert_eq!(36, step_events[0].note_number);
 
     let euclidean_events = context.events_for_tick(0);
     assert_eq!(1, euclidean_events.len());
@@ -307,7 +307,7 @@ fn test_events_with_swing() {
 
     let events = context.events_for_tick(6 + percentage_swing_to_ticks(swing_amount));
     assert_eq!(1, events.len());
-    assert_eq!(1, events[0].note_number);
+    assert_eq!(36, events[0].note_number);
 }
 
 #[test]
@@ -326,11 +326,7 @@ fn test_process_left_message() {
     let context = Context::default();
 
     let processed_context = context.process_messages(vec![Message::Left]);
-    assert_eq!(0, processed_context.step_sequencer.active_note_number);
-
-    // We don't allow the number to go below zero
-    let processed_context = context.process_messages(vec![Message::Left]);
-    assert_eq!(0, processed_context.step_sequencer.active_note_number);
+    assert_eq!(35, processed_context.step_sequencer.active_note_number);
 }
 
 #[test]
@@ -338,7 +334,7 @@ fn test_process_right_message() {
     let context = Context::default();
 
     let processed_context = context.process_messages(vec![Message::Right]);
-    assert_eq!(2, processed_context.step_sequencer.active_note_number);
+    assert_eq!(37, processed_context.step_sequencer.active_note_number);
 }
 
 #[test]
