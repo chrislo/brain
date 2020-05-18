@@ -174,6 +174,10 @@ impl Context {
                     self.set_step_sequencer(new_step_sequencer)
                 }
                 Message::Select => self.set_mode(Mode::Step),
+                _ => self.clone(),
+            },
+            Mode::Step => match message {
+                Message::NoteOn { note_number: n } => self.edit_step(*n),
                 Message::KnobIncrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
                     euclidean_sequencer: self.euclidean_sequencer.clone(),
@@ -206,10 +210,6 @@ impl Context {
                     mode: self.mode,
                     tick: self.tick,
                 },
-                _ => self.clone(),
-            },
-            Mode::Step => match message {
-                Message::NoteOn { note_number: n } => self.edit_step(*n),
                 _ => self.clone(),
             },
         }
@@ -344,7 +344,7 @@ fn test_process_two_messages() {
 
 #[test]
 fn test_process_knob_1_bpm_set_message() {
-    let context = Context::default();
+    let context = Context::default().set_mode(Mode::Step);
 
     let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 1 }]);
     assert_eq!(121.0, processed_context.bpm);
@@ -355,7 +355,7 @@ fn test_process_knob_1_bpm_set_message() {
 
 #[test]
 fn test_process_knob_2_swing_set_message() {
-    let context = Context::default();
+    let context = Context::default().set_mode(Mode::Step);
 
     let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 2 }]);
     assert_eq!(1, processed_context.swing_amount);
