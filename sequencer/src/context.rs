@@ -173,12 +173,6 @@ impl Context {
                         .toggle_sixteenth(note_number_to_sixteenth(*n));
                     self.set_step_sequencer(new_step_sequencer)
                 }
-                Message::Left => {
-                    self.set_step_sequencer(self.step_sequencer.decrement_active_note_number())
-                }
-                Message::Right => {
-                    self.set_step_sequencer(self.step_sequencer.increment_active_note_number())
-                }
                 Message::Select => self.set_mode(Mode::Step),
                 Message::KnobIncrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
@@ -330,22 +324,6 @@ fn test_process_note_on_message() {
 
     let active_sixteenths = processed_context.step_sequencer.active_sixteenths();
     assert_eq!(1, active_sixteenths.len());
-}
-
-#[test]
-fn test_process_left_message() {
-    let context = Context::default();
-
-    let processed_context = context.process_messages(vec![Message::Left]);
-    assert_eq!(35, processed_context.step_sequencer.active_note_number);
-}
-
-#[test]
-fn test_process_right_message() {
-    let context = Context::default();
-
-    let processed_context = context.process_messages(vec![Message::Right]);
-    assert_eq!(37, processed_context.step_sequencer.active_note_number);
 }
 
 #[test]

@@ -127,9 +127,6 @@ fn message_to_addr(message: String) -> String {
     format!("/{}/{}", controller_addr, message)
 }
 
-#[cfg(test)]
-use crate::input::Message;
-
 #[test]
 fn test_message_to_addr() {
     assert_eq!("/atom/note_on", message_to_addr("note_on".to_string()));
@@ -154,12 +151,6 @@ fn test_active_pads_step_sequencer() {
 
     assert_eq!(1, active_pads(&context).len());
     assert!(active_pads(&context).contains(&37));
-
-    // active_note_number was 1 when steps added, so no pads active
-    // when we increment the active_note_number
-    let messages = vec![Message::Right];
-    let processed_context = context.process_messages(messages);
-    assert_eq!(0, active_pads(&processed_context).len());
 }
 
 #[test]
@@ -175,12 +166,6 @@ fn test_active_pads_euclidean_sequencer() {
 
     assert_eq!(1, active_pads(&context).len());
     assert!(active_pads(&context).contains(&36));
-
-    // active_note_number was 1 when steps added, so no pads active
-    // when we increment the active_note_number
-    let messages = vec![Message::Right];
-    let processed_context = context.process_messages(messages);
-    assert_eq!(0, active_pads(&processed_context).len());
 }
 
 #[test]
