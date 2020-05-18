@@ -68,6 +68,19 @@ impl Context {
         events
     }
 
+    fn edit_step(&self, note_number: i32) -> Context {
+        let new_step_sequencer = self.step_sequencer.set_active_note_number(note_number);
+
+        Context {
+            step_sequencer: new_step_sequencer,
+            euclidean_sequencer: self.euclidean_sequencer.clone(),
+            swing_amount: self.swing_amount,
+            bpm: self.bpm,
+            mode: Mode::StepEdit,
+            tick: self.tick,
+        }
+    }
+
     fn set_step_sequencer(&self, step_sequencer: StepSequencer) -> Context {
         Context {
             step_sequencer: step_sequencer,
@@ -190,7 +203,10 @@ impl Context {
                 },
                 _ => self.clone(),
             },
-            Mode::Step => self.clone(),
+            Mode::Step => match message {
+                Message::NoteOn { note_number: n } => self.edit_step(*n),
+                _ => self.clone(),
+            },
         }
     }
 }

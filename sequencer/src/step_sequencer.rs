@@ -83,6 +83,13 @@ impl StepSequencer {
         }
     }
 
+    pub fn set_active_note_number(&self, note_number: i32) -> StepSequencer {
+        StepSequencer {
+            steps: self.steps.clone(),
+            active_note_number: note_number,
+        }
+    }
+
     pub fn current_position(&self, tick: i32) -> i32 {
         let track_length_in_ticks = 96;
         let offset_into_track = tick % track_length_in_ticks;
