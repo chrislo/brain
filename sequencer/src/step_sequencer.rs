@@ -69,6 +69,17 @@ impl StepSequencer {
         steps.into_iter().map(|s| (s.tick / 6) + 1).collect()
     }
 
+    pub fn active_notes(&self, tick: i32) -> HashSet<i32> {
+        let events = self.events_for_tick(tick);
+        let mut active_notes = HashSet::new();
+
+        for e in events {
+            active_notes.insert(e.note_number);
+        }
+
+        active_notes
+    }
+
     pub fn increment_active_note_number(&self) -> StepSequencer {
         StepSequencer {
             steps: self.steps.clone(),
@@ -211,4 +222,17 @@ fn test_current_position() {
     assert_eq!(2, sequencer.current_position(6));
     assert_eq!(16, sequencer.current_position(95));
     assert_eq!(1, sequencer.current_position(96));
+}
+
+#[test]
+fn test_active_notes() {
+    let sequencer = StepSequencer::empty()
+        .set_active_note_number(1)
+        .toggle_sixteenth(1)
+        .set_active_note_number(3)
+        .toggle_sixteenth(1);
+
+    assert_eq!(2, sequencer.events_for_tick(0).len());
+    assert!(sequencer.active_notes(0).contains(&1));
+    assert!(sequencer.active_notes(0).contains(&3));
 }

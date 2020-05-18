@@ -71,16 +71,21 @@ fn current_pad(context: &Context) -> Option<i32> {
 }
 
 fn active_pads(context: &Context) -> HashSet<i32> {
-    let active_pads = match context.mode {
-        Mode::StepEdit => context.step_sequencer.active_sixteenths(),
-        Mode::Euclidean => context.euclidean_sequencer.active_sixteenths(),
-        Mode::Step => HashSet::new(),
-    };
-
-    active_pads
-        .iter()
-        .map(|s| sixteenth_to_note_number(*s))
-        .collect()
+    match context.mode {
+        Mode::StepEdit => context
+            .step_sequencer
+            .active_sixteenths()
+            .iter()
+            .map(|s| sixteenth_to_note_number(*s))
+            .collect(),
+        Mode::Euclidean => context
+            .euclidean_sequencer
+            .active_sixteenths()
+            .iter()
+            .map(|s| sixteenth_to_note_number(*s))
+            .collect(),
+        Mode::Step => context.step_sequencer.active_notes(context.tick),
+    }
 }
 
 fn sixteenth_to_note_number(sixteenth: i32) -> i32 {
@@ -176,4 +181,21 @@ fn test_active_pads_euclidean_sequencer() {
     let messages = vec![Message::Right];
     let processed_context = context.process_messages(messages);
     assert_eq!(0, active_pads(&processed_context).len());
+}
+
+#[test]
+fn test_active_pads_step_mode() {
+    let context = Context {
+        step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
+        euclidean_sequencer: EuclideanSequencer::empty(),
+        swing_amount: 0,
+        bpm: 120.0,
+        mode: Mode::Step,
+        tick: 0,
+    };
+
+    // the first sixteenth is active, so in Step mode pad 1 should
+    // flash on tick 0
+    assert_eq!(1, active_pads(&context).len());
+    assert!(active_pads(&context).contains(&36));
 }
