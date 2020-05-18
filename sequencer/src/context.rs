@@ -27,7 +27,7 @@ impl Context {
             euclidean_sequencer: EuclideanSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
-            mode: Mode::StepEdit,
+            mode: Mode::Step,
             tick: 0,
         }
     }
@@ -317,7 +317,7 @@ fn test_events_with_swing() {
 
 #[test]
 fn test_process_note_on_message() {
-    let context = Context::default();
+    let context = Context::default().set_mode(Mode::StepEdit);
     let messages = vec![Message::NoteOn { note_number: 43 }];
 
     let processed_context = context.process_messages(messages);
@@ -328,7 +328,7 @@ fn test_process_note_on_message() {
 
 #[test]
 fn test_process_two_messages() {
-    let context = Context::default();
+    let context = Context::default().set_mode(Mode::StepEdit);
     let messages = vec![
         Message::NoteOn { note_number: 42 },
         Message::NoteOn { note_number: 43 },
