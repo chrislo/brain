@@ -71,13 +71,13 @@ fn current_pad(context: &Context) -> Option<i32> {
 }
 
 fn active_pads(context: &Context) -> HashSet<i32> {
-    let active_sixteenths = match context.mode {
+    let active_pads = match context.mode {
         Mode::StepEdit => context.step_sequencer.active_sixteenths(),
         Mode::Euclidean => context.euclidean_sequencer.active_sixteenths(),
         Mode::Step => HashSet::new(),
     };
 
-    active_sixteenths
+    active_pads
         .iter()
         .map(|s| sixteenth_to_note_number(*s))
         .collect()
