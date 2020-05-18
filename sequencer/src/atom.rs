@@ -26,10 +26,22 @@ pub fn handshake() {
 
 pub fn update(current_context: &Context, next_context: &Context) -> Vec<Vec<u8>> {
     let mut current_context_active_pads = active_pads(current_context);
-    current_context_active_pads.insert(current_pad(current_context));
+
+    match current_pad(current_context) {
+        Some(n) => {
+            current_context_active_pads.insert(n);
+        }
+        None => {}
+    }
 
     let mut next_context_active_pads = active_pads(next_context);
-    next_context_active_pads.insert(current_pad(next_context));
+
+    match current_pad(next_context) {
+        Some(n) => {
+            next_context_active_pads.insert(n);
+        }
+        None => {}
+    }
 
     let mut osc_messages = vec![];
 
@@ -44,18 +56,25 @@ pub fn update(current_context: &Context, next_context: &Context) -> Vec<Vec<u8>>
     osc_messages
 }
 
-fn current_pad(context: &Context) -> i32 {
-    let current_position = match context.mode {
-        Mode::StepEdit => context.step_sequencer.current_position(context.tick),
-        Mode::Euclidean => context.euclidean_sequencer.current_position(context.tick),
-    };
-    sixteenth_to_note_number(current_position)
+fn current_pad(context: &Context) -> Option<i32> {
+    match context.mode {
+        Mode::StepEdit => {
+            let current_position = context.step_sequencer.current_position(context.tick);
+            Some(sixteenth_to_note_number(current_position))
+        }
+        Mode::Euclidean => {
+            let current_position = context.euclidean_sequencer.current_position(context.tick);
+            Some(sixteenth_to_note_number(current_position))
+        }
+        _ => None,
+    }
 }
 
 fn active_pads(context: &Context) -> HashSet<i32> {
     let active_sixteenths = match context.mode {
         Mode::StepEdit => context.step_sequencer.active_sixteenths(),
         Mode::Euclidean => context.euclidean_sequencer.active_sixteenths(),
+        Mode::Step => HashSet::new(),
     };
 
     active_sixteenths
