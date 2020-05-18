@@ -16,7 +16,7 @@ pub struct Context {
 #[derive(Debug, Copy, Clone)]
 pub enum Mode {
     Euclidean,
-    Step,
+    StepEdit,
 }
 
 impl Context {
@@ -26,7 +26,7 @@ impl Context {
             euclidean_sequencer: EuclideanSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
-            mode: Mode::Step,
+            mode: Mode::StepEdit,
             tick: 0,
         }
     }
@@ -91,7 +91,7 @@ impl Context {
 
     fn toggle_mode(&self) -> Context {
         match self.mode {
-            Mode::Step => Context {
+            Mode::StepEdit => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 euclidean_sequencer: self.euclidean_sequencer.clone(),
                 swing_amount: self.swing_amount,
@@ -104,7 +104,7 @@ impl Context {
                 euclidean_sequencer: self.euclidean_sequencer.clone(),
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
-                mode: Mode::Step,
+                mode: Mode::StepEdit,
                 tick: self.tick,
             },
         }
@@ -140,7 +140,7 @@ impl Context {
                 }
                 _ => self.clone(),
             },
-            Mode::Step => match message {
+            Mode::StepEdit => match message {
                 Message::NoteOn { note_number: n } => {
                     let new_step_sequencer = self
                         .step_sequencer
@@ -279,7 +279,7 @@ fn test_events_with_swing() {
         euclidean_sequencer: EuclideanSequencer::empty(),
         swing_amount: swing_amount,
         bpm: 120.0,
-        mode: Mode::Step,
+        mode: Mode::StepEdit,
         tick: 0,
     };
 

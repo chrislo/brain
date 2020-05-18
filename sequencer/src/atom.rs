@@ -46,7 +46,7 @@ pub fn update(current_context: &Context, next_context: &Context) -> Vec<Vec<u8>>
 
 fn current_pad(context: &Context) -> i32 {
     let current_position = match context.mode {
-        Mode::Step => context.step_sequencer.current_position(context.tick),
+        Mode::StepEdit => context.step_sequencer.current_position(context.tick),
         Mode::Euclidean => context.euclidean_sequencer.current_position(context.tick),
     };
     sixteenth_to_note_number(current_position)
@@ -54,7 +54,7 @@ fn current_pad(context: &Context) -> i32 {
 
 fn active_pads(context: &Context) -> HashSet<i32> {
     let active_sixteenths = match context.mode {
-        Mode::Step => context.step_sequencer.active_sixteenths(),
+        Mode::StepEdit => context.step_sequencer.active_sixteenths(),
         Mode::Euclidean => context.euclidean_sequencer.active_sixteenths(),
     };
 
@@ -124,7 +124,7 @@ fn test_active_pads_step_sequencer() {
         euclidean_sequencer: EuclideanSequencer::empty(),
         swing_amount: 0,
         bpm: 120.0,
-        mode: Mode::Step,
+        mode: Mode::StepEdit,
         tick: 0,
     };
 
