@@ -103,6 +103,17 @@ impl Context {
         }
     }
 
+    fn set_mode(&self, mode: Mode) -> Context {
+        Context {
+            step_sequencer: self.step_sequencer.clone(),
+            euclidean_sequencer: self.euclidean_sequencer.clone(),
+            swing_amount: self.swing_amount,
+            bpm: self.bpm,
+            mode: mode,
+            tick: self.tick,
+        }
+    }
+
     fn toggle_mode(&self) -> Context {
         match self.mode {
             Mode::Step => self.clone(),
@@ -168,7 +179,7 @@ impl Context {
                 Message::Right => {
                     self.set_step_sequencer(self.step_sequencer.increment_active_note_number())
                 }
-                Message::Select => self.toggle_mode(),
+                Message::Select => self.set_mode(Mode::Step),
                 Message::KnobIncrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
                     euclidean_sequencer: self.euclidean_sequencer.clone(),
