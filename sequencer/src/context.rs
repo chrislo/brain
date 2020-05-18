@@ -23,7 +23,7 @@ pub enum Mode {
 impl Context {
     pub fn default() -> Context {
         Context {
-            step_sequencer: StepSequencer::empty(),
+            step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
             euclidean_sequencer: EuclideanSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
@@ -317,7 +317,10 @@ fn test_events_with_swing() {
 
 #[test]
 fn test_process_note_on_message() {
-    let context = Context::default().set_mode(Mode::StepEdit);
+    let sequencer = StepSequencer::empty();
+    let context = Context::default()
+        .set_mode(Mode::StepEdit)
+        .set_step_sequencer(sequencer);
     let messages = vec![Message::NoteOn { note_number: 43 }];
 
     let processed_context = context.process_messages(messages);
@@ -328,7 +331,10 @@ fn test_process_note_on_message() {
 
 #[test]
 fn test_process_two_messages() {
-    let context = Context::default().set_mode(Mode::StepEdit);
+    let sequencer = StepSequencer::empty();
+    let context = Context::default()
+        .set_mode(Mode::StepEdit)
+        .set_step_sequencer(sequencer);
     let messages = vec![
         Message::NoteOn { note_number: 42 },
         Message::NoteOn { note_number: 43 },
