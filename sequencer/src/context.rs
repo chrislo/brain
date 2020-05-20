@@ -1,12 +1,14 @@
 use crate::euclidean_sequencer::EuclideanSequencer;
 use crate::event::Event;
 use crate::input::Message;
+use crate::one_shot_sequencer::OneShotSequencer;
 use crate::step_sequencer::StepSequencer;
 
 #[derive(Debug, Clone)]
 pub struct Context {
     pub step_sequencer: StepSequencer,
     pub euclidean_sequencer: EuclideanSequencer,
+    pub one_shot_sequencer: OneShotSequencer,
     pub swing_amount: i32,
     pub bpm: f32,
     pub mode: Mode,
@@ -26,6 +28,7 @@ impl Context {
         Context {
             step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
             euclidean_sequencer: EuclideanSequencer::empty(),
+            one_shot_sequencer: OneShotSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
             mode: Mode::Step,
@@ -64,8 +67,10 @@ impl Context {
         let mut events = vec![];
         let mut step_sequencer_events = swing(&self.step_sequencer, tick_number, self.swing_amount);
         let mut euclidean_sequencer_events = self.euclidean_sequencer.events_for_tick(tick_number);
+        let mut one_shot_sequencer_events = self.one_shot_sequencer.events_for_tick(tick_number);
         events.append(&mut step_sequencer_events);
         events.append(&mut euclidean_sequencer_events);
+        events.append(&mut one_shot_sequencer_events);
         events
     }
 
@@ -75,6 +80,7 @@ impl Context {
         Context {
             step_sequencer: new_step_sequencer,
             euclidean_sequencer: self.euclidean_sequencer.clone(),
+            one_shot_sequencer: self.one_shot_sequencer.clone(),
             swing_amount: self.swing_amount,
             bpm: self.bpm,
             mode: Mode::StepEdit,
@@ -86,6 +92,19 @@ impl Context {
         Context {
             step_sequencer: step_sequencer,
             euclidean_sequencer: self.euclidean_sequencer.clone(),
+            one_shot_sequencer: self.one_shot_sequencer.clone(),
+            swing_amount: self.swing_amount,
+            bpm: self.bpm,
+            mode: self.mode,
+            tick: self.tick,
+        }
+    }
+
+    fn set_one_shot_sequencer(&self, one_shot_sequencer: OneShotSequencer) -> Context {
+        Context {
+            step_sequencer: self.step_sequencer.clone(),
+            euclidean_sequencer: self.euclidean_sequencer.clone(),
+            one_shot_sequencer: one_shot_sequencer,
             swing_amount: self.swing_amount,
             bpm: self.bpm,
             mode: self.mode,
@@ -97,6 +116,7 @@ impl Context {
         Context {
             step_sequencer: self.step_sequencer.clone(),
             euclidean_sequencer: euclidean_sequencer,
+            one_shot_sequencer: self.one_shot_sequencer.clone(),
             swing_amount: self.swing_amount,
             bpm: self.bpm,
             mode: self.mode,
@@ -108,6 +128,7 @@ impl Context {
         Context {
             step_sequencer: self.step_sequencer.clone(),
             euclidean_sequencer: self.euclidean_sequencer.clone(),
+            one_shot_sequencer: self.one_shot_sequencer.clone(),
             swing_amount: self.swing_amount,
             bpm: self.bpm,
             mode: mode,
@@ -121,6 +142,7 @@ impl Context {
             Mode::StepEdit => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 euclidean_sequencer: self.euclidean_sequencer.clone(),
+                one_shot_sequencer: self.one_shot_sequencer.clone(),
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
                 mode: Mode::Euclidean,
@@ -129,6 +151,7 @@ impl Context {
             Mode::Euclidean => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 euclidean_sequencer: self.euclidean_sequencer.clone(),
+                one_shot_sequencer: self.one_shot_sequencer.clone(),
                 swing_amount: self.swing_amount,
                 bpm: self.bpm,
                 mode: Mode::StepEdit,
@@ -184,9 +207,14 @@ impl Context {
             },
             Mode::Step => match message {
                 Message::Select => self.set_mode(Mode::StepSelect),
+                Message::NoteOn { note_number: n } => {
+                    let new_sequencer = self.one_shot_sequencer.add_one_shot(*n, self.tick + 1);
+                    self.set_one_shot_sequencer(new_sequencer)
+                }
                 Message::KnobIncrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
                     euclidean_sequencer: self.euclidean_sequencer.clone(),
+                    one_shot_sequencer: self.one_shot_sequencer.clone(),
                     swing_amount: self.swing_amount,
                     bpm: (self.bpm + 1.0).min(240.0),
                     mode: self.mode,
@@ -195,6 +223,7 @@ impl Context {
                 Message::KnobDecrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
                     euclidean_sequencer: self.euclidean_sequencer.clone(),
+                    one_shot_sequencer: self.one_shot_sequencer.clone(),
                     swing_amount: self.swing_amount,
                     bpm: (self.bpm - 1.0).max(30.0),
                     mode: self.mode,
@@ -203,6 +232,7 @@ impl Context {
                 Message::KnobIncrement { number: 2 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
                     euclidean_sequencer: self.euclidean_sequencer.clone(),
+                    one_shot_sequencer: self.one_shot_sequencer.clone(),
                     swing_amount: std::cmp::min(self.swing_amount + 1, 100),
                     bpm: self.bpm,
                     mode: self.mode,
@@ -211,6 +241,7 @@ impl Context {
                 Message::KnobDecrement { number: 2 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
                     euclidean_sequencer: self.euclidean_sequencer.clone(),
+                    one_shot_sequencer: self.one_shot_sequencer.clone(),
                     swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                     bpm: self.bpm,
                     mode: self.mode,
@@ -307,6 +338,7 @@ fn test_events_with_swing() {
     let context = Context {
         step_sequencer: step_sequencer,
         euclidean_sequencer: EuclideanSequencer::empty(),
+        one_shot_sequencer: OneShotSequencer::empty(),
         swing_amount: swing_amount,
         bpm: 120.0,
         mode: Mode::StepEdit,

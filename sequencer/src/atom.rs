@@ -138,11 +138,15 @@ use crate::step_sequencer::StepSequencer;
 #[cfg(test)]
 use crate::euclidean_sequencer::EuclideanSequencer;
 
+#[cfg(test)]
+use crate::one_shot_sequencer::OneShotSequencer;
+
 #[test]
 fn test_active_pads_step_sequencer() {
     let context = Context {
         step_sequencer: StepSequencer::empty().toggle_sixteenth(2),
         euclidean_sequencer: EuclideanSequencer::empty(),
+        one_shot_sequencer: OneShotSequencer::empty(),
         swing_amount: 0,
         bpm: 120.0,
         mode: Mode::StepEdit,
@@ -158,6 +162,7 @@ fn test_active_pads_euclidean_sequencer() {
     let context = Context {
         step_sequencer: StepSequencer::empty(),
         euclidean_sequencer: EuclideanSequencer::empty().increment_onsets(),
+        one_shot_sequencer: OneShotSequencer::empty(),
         swing_amount: 0,
         bpm: 120.0,
         mode: Mode::Euclidean,
@@ -173,6 +178,7 @@ fn test_active_pads_step_mode() {
     let context = Context {
         step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
         euclidean_sequencer: EuclideanSequencer::empty(),
+        one_shot_sequencer: OneShotSequencer::empty(),
         swing_amount: 0,
         bpm: 120.0,
         mode: Mode::Step,
