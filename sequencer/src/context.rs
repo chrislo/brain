@@ -177,8 +177,12 @@ impl Context {
                 Message::Select => self.set_mode(Mode::Step),
                 _ => self.clone(),
             },
-            Mode::StepSelect => self.clone(),
+            Mode::StepSelect => match message {
+                Message::Select => self.set_mode(Mode::Step),
+                _ => self.clone(),
+            },
             Mode::Step => match message {
+                Message::Select => self.set_mode(Mode::StepSelect),
                 Message::NoteOn { note_number: n } => self.edit_step(*n),
                 Message::KnobIncrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
