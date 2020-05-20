@@ -84,7 +84,7 @@ fn active_pads(context: &Context) -> HashSet<i32> {
             .iter()
             .map(|s| sixteenth_to_note_number(*s))
             .collect(),
-        Mode::Step => context.step_sequencer.active_notes(context.tick),
+        Mode::Step | Mode::StepSelect => context.step_sequencer.active_notes(context.tick),
     }
 }
 

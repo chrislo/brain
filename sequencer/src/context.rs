@@ -18,6 +18,7 @@ pub enum Mode {
     Euclidean,
     StepEdit,
     Step,
+    StepSelect,
 }
 
 impl Context {
@@ -116,7 +117,7 @@ impl Context {
 
     fn toggle_mode(&self) -> Context {
         match self.mode {
-            Mode::Step => self.clone(),
+            Mode::Step | Mode::StepSelect => self.clone(),
             Mode::StepEdit => Context {
                 step_sequencer: self.step_sequencer.clone(),
                 euclidean_sequencer: self.euclidean_sequencer.clone(),
@@ -176,6 +177,7 @@ impl Context {
                 Message::Select => self.set_mode(Mode::Step),
                 _ => self.clone(),
             },
+            Mode::StepSelect => self.clone(),
             Mode::Step => match message {
                 Message::NoteOn { note_number: n } => self.edit_step(*n),
                 Message::KnobIncrement { number: 1 } => Context {
