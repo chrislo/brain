@@ -174,7 +174,7 @@ impl Context {
                         .toggle_sixteenth(note_number_to_sixteenth(*n));
                     self.set_step_sequencer(new_step_sequencer)
                 }
-                Message::Select => self.set_mode(Mode::Step),
+                Message::Select => self.set_mode(Mode::StepSelect),
                 _ => self.clone(),
             },
             Mode::StepSelect => match message {
