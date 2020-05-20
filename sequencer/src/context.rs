@@ -179,11 +179,11 @@ impl Context {
             },
             Mode::StepSelect => match message {
                 Message::Select => self.set_mode(Mode::Step),
+                Message::NoteOn { note_number: n } => self.edit_step(*n),
                 _ => self.clone(),
             },
             Mode::Step => match message {
                 Message::Select => self.set_mode(Mode::StepSelect),
-                Message::NoteOn { note_number: n } => self.edit_step(*n),
                 Message::KnobIncrement { number: 1 } => Context {
                     step_sequencer: self.step_sequencer.clone(),
                     euclidean_sequencer: self.euclidean_sequencer.clone(),
