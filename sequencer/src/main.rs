@@ -27,7 +27,7 @@ fn main() {
         let mut current_context = Context::default();
 
         loop {
-            o2m_output.send(output::clock_packet());
+            o2m_output.send(output::clock_message());
 
             let now = Instant::now();
 

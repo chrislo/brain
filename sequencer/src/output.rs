@@ -24,20 +24,20 @@ impl Output {
         }
     }
 
-    pub fn send(&self, packet: Vec<u8>) {
+    pub fn send(&self, message: OscMessage) {
+        let packet = encoder::encode(&OscPacket::Message(message)).unwrap();
         self.socket.send_to(&packet, self.to_addr).unwrap();
     }
 }
 
-pub fn send_osc_to_o2m(packet: Vec<u8>) {
+pub fn send_osc_message_to_o2m(message: OscMessage) {
     let output = Output::o2m();
-    output.send(packet);
+    output.send(message);
 }
 
-pub fn clock_packet() -> Vec<u8> {
-    encoder::encode(&OscPacket::Message(OscMessage {
+pub fn clock_message() -> OscMessage {
+    OscMessage {
         addr: "/*/clock".to_string(),
         args: vec![],
-    }))
-    .unwrap()
+    }
 }

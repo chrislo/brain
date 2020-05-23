@@ -1,5 +1,4 @@
-use rosc::encoder;
-use rosc::{OscMessage, OscPacket};
+use rosc::OscMessage;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Event {
@@ -7,11 +6,10 @@ pub struct Event {
 }
 
 impl Event {
-    pub fn to_osc_message(&self) -> Vec<u8> {
-        encoder::encode(&OscPacket::Message(OscMessage {
+    pub fn to_osc_message(&self) -> OscMessage {
+        OscMessage {
             addr: "/sampler".to_string(),
             args: vec![rosc::OscType::Int(self.note_number)],
-        }))
-        .unwrap()
+        }
     }
 }
