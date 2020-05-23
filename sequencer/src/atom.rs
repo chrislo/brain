@@ -170,3 +170,23 @@ fn test_active_pads_step_mode() {
     assert_eq!(1, active_pads(&context).len());
     assert!(active_pads(&context).contains(&36));
 }
+
+#[test]
+fn test_turn_light_on_message() {
+    let message = turn_light_on_message(35);
+
+    assert_eq!("/atom/note_on", message.addr);
+    assert_eq!(rosc::OscType::Int(1), message.args[0]);
+    assert_eq!(rosc::OscType::Int(35), message.args[1]);
+    assert_eq!(rosc::OscType::Int(127), message.args[2]);
+}
+
+#[test]
+fn test_turn_light_off_message() {
+    let message = turn_light_off_message(35);
+
+    assert_eq!("/atom/note_on", message.addr);
+    assert_eq!(rosc::OscType::Int(1), message.args[0]);
+    assert_eq!(rosc::OscType::Int(35), message.args[1]);
+    assert_eq!(rosc::OscType::Int(0), message.args[2]);
+}
