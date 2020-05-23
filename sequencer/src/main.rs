@@ -39,8 +39,8 @@ fn main() {
             let messages = r.try_iter().collect();
             let next_context = current_context.process_messages(messages).advance_tick();
 
-            let messages = atom::update(&current_context, &next_context);
-            for message in messages {
+            let o2m_messages = atom::update(&current_context, &next_context);
+            for message in o2m_messages {
                 o2m_output.send(message);
             }
 
