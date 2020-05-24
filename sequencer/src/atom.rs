@@ -4,6 +4,53 @@ use crate::output;
 use rosc::OscMessage;
 use std::collections::HashSet;
 
+#[derive(Hash, Eq, Copy, Clone, Debug)]
+struct Pad {
+    number: i32,
+}
+
+impl PartialEq for Pad {
+    fn eq(&self, other: &Self) -> bool {
+        self.number == other.number
+    }
+}
+
+impl Pad {
+    pub fn new(number: i32) -> Pad {
+        Pad { number: number }
+    }
+
+    pub fn from_midi_note_number(note_number: i32) -> Pad {
+        Pad::new(note_number - 35)
+    }
+
+    pub fn note_number(&self) -> i32 {
+        self.number + 35
+    }
+
+    fn turn_light_on_message(&self) -> OscMessage {
+        OscMessage {
+            addr: message_to_addr("note_on".to_string()),
+            args: vec![
+                rosc::OscType::Int(1),
+                rosc::OscType::Int(self.note_number()),
+                rosc::OscType::Int(127),
+            ],
+        }
+    }
+
+    fn turn_light_off_message(&self) -> OscMessage {
+        OscMessage {
+            addr: message_to_addr("note_on".to_string()),
+            args: vec![
+                rosc::OscType::Int(1),
+                rosc::OscType::Int(self.note_number()),
+                rosc::OscType::Int(0),
+            ],
+        }
+    }
+}
+
 pub fn init() {
     handshake();
     turn_all_lights_off();
@@ -25,8 +72,8 @@ pub fn update(current_context: &Context, next_context: &Context) -> Vec<OscMessa
     let mut current_context_active_pads = active_pads(current_context);
 
     match current_pad(current_context) {
-        Some(n) => {
-            current_context_active_pads.insert(n);
+        Some(pad) => {
+            current_context_active_pads.insert(pad);
         }
         None => {}
     }
@@ -34,8 +81,8 @@ pub fn update(current_context: &Context, next_context: &Context) -> Vec<OscMessa
     let mut next_context_active_pads = active_pads(next_context);
 
     match current_pad(next_context) {
-        Some(n) => {
-            next_context_active_pads.insert(n);
+        Some(pad) => {
+            next_context_active_pads.insert(pad);
         }
         None => {}
     }
@@ -43,77 +90,56 @@ pub fn update(current_context: &Context, next_context: &Context) -> Vec<OscMessa
     let mut osc_messages = vec![];
 
     for pad_added in next_context_active_pads.difference(&current_context_active_pads) {
-        osc_messages.push(turn_light_on_message(*pad_added));
+        osc_messages.push(pad_added.turn_light_on_message());
     }
 
     for pad_removed in current_context_active_pads.difference(&next_context_active_pads) {
-        osc_messages.push(turn_light_off_message(*pad_removed));
+        osc_messages.push(pad_removed.turn_light_off_message());
     }
 
     osc_messages
 }
 
-fn current_pad(context: &Context) -> Option<i32> {
+fn current_pad(context: &Context) -> Option<Pad> {
     match context.mode {
         Mode::StepEdit => {
             let current_position = context.step_sequencer.current_position(context.tick);
-            Some(sixteenth_to_note_number(current_position))
+            Some(Pad::new(current_position))
         }
         Mode::Euclidean => {
             let current_position = context.euclidean_sequencer.current_position(context.tick);
-            Some(sixteenth_to_note_number(current_position))
+            Some(Pad::new(current_position))
         }
         _ => None,
     }
 }
 
-fn active_pads(context: &Context) -> HashSet<i32> {
+fn active_pads(context: &Context) -> HashSet<Pad> {
     match context.mode {
         Mode::StepEdit => context
             .step_sequencer
             .active_sixteenths()
             .iter()
-            .map(|s| sixteenth_to_note_number(*s))
+            .map(|s| Pad::new(*s))
             .collect(),
         Mode::Euclidean => context
             .euclidean_sequencer
             .active_sixteenths()
             .iter()
-            .map(|s| sixteenth_to_note_number(*s))
+            .map(|s| Pad::new(*s))
             .collect(),
-        Mode::Step | Mode::StepSelect => context.step_sequencer.active_notes(context.tick),
+        Mode::Step | Mode::StepSelect => context
+            .step_sequencer
+            .active_notes(context.tick)
+            .iter()
+            .map(|n| Pad::from_midi_note_number(*n))
+            .collect(),
     }
-}
-
-fn sixteenth_to_note_number(sixteenth: i32) -> i32 {
-    sixteenth + 35
 }
 
 fn turn_all_lights_off() {
-    for n in 36..52 {
-        output::send_osc_message_to_o2m(turn_light_off_message(n));
-    }
-}
-
-fn turn_light_on_message(note_number: i32) -> OscMessage {
-    OscMessage {
-        addr: message_to_addr("note_on".to_string()),
-        args: vec![
-            rosc::OscType::Int(1),
-            rosc::OscType::Int(note_number),
-            rosc::OscType::Int(127),
-        ],
-    }
-}
-
-fn turn_light_off_message(note_number: i32) -> OscMessage {
-    OscMessage {
-        addr: message_to_addr("note_on".to_string()),
-        args: vec![
-            rosc::OscType::Int(1),
-            rosc::OscType::Int(note_number),
-            rosc::OscType::Int(0),
-        ],
+    for n in 1..16 {
+        output::send_osc_message_to_o2m(Pad::new(n).turn_light_off_message());
     }
 }
 
@@ -142,7 +168,7 @@ fn test_active_pads_step_sequencer() {
     };
 
     assert_eq!(1, active_pads(&context).len());
-    assert!(active_pads(&context).contains(&37));
+    assert!(active_pads(&context).contains(&Pad::new(2)));
 }
 
 #[test]
@@ -154,7 +180,7 @@ fn test_active_pads_euclidean_sequencer() {
     };
 
     assert_eq!(1, active_pads(&context).len());
-    assert!(active_pads(&context).contains(&36));
+    assert!(active_pads(&context).contains(&Pad::new(1)));
 }
 
 #[test]
@@ -168,25 +194,31 @@ fn test_active_pads_step_mode() {
     // the first sixteenth is active, so in Step mode pad 1 should
     // flash on tick 0
     assert_eq!(1, active_pads(&context).len());
-    assert!(active_pads(&context).contains(&36));
+    assert!(active_pads(&context).contains(&Pad::new(1)));
 }
 
 #[test]
 fn test_turn_light_on_message() {
-    let message = turn_light_on_message(35);
+    let message = Pad::new(1).turn_light_on_message();
 
     assert_eq!("/atom/note_on", message.addr);
     assert_eq!(rosc::OscType::Int(1), message.args[0]);
-    assert_eq!(rosc::OscType::Int(35), message.args[1]);
+    assert_eq!(rosc::OscType::Int(36), message.args[1]);
     assert_eq!(rosc::OscType::Int(127), message.args[2]);
 }
 
 #[test]
 fn test_turn_light_off_message() {
-    let message = turn_light_off_message(35);
+    let message = Pad::new(1).turn_light_off_message();
 
     assert_eq!("/atom/note_on", message.addr);
     assert_eq!(rosc::OscType::Int(1), message.args[0]);
-    assert_eq!(rosc::OscType::Int(35), message.args[1]);
+    assert_eq!(rosc::OscType::Int(36), message.args[1]);
     assert_eq!(rosc::OscType::Int(0), message.args[2]);
+}
+
+#[test]
+fn test_from_midi_note_number() {
+    let pad = Pad::from_midi_note_number(36);
+    assert_eq!(1, pad.number);
 }
