@@ -97,6 +97,11 @@ pub fn update(current_context: &Context, next_context: &Context) -> Vec<OscMessa
         osc_messages.push(pad_removed.turn_light_off_message());
     }
 
+    match select_button_message(next_context) {
+        Some(msg) => osc_messages.push(msg),
+        None => {}
+    }
+
     osc_messages
 }
 
@@ -146,6 +151,49 @@ fn turn_all_lights_off() {
 fn message_to_addr(message: String) -> String {
     let controller_addr = config::controller_addr();
     format!("/{}/{}", controller_addr, message)
+}
+
+fn select_button_on_message() -> OscMessage {
+    OscMessage {
+        addr: message_to_addr("control_change".to_string()),
+        args: vec![
+            rosc::OscType::Int(1),
+            rosc::OscType::Int(103),
+            rosc::OscType::Int(127),
+        ],
+    }
+}
+
+fn select_button_off_message() -> OscMessage {
+    OscMessage {
+        addr: message_to_addr("control_change".to_string()),
+        args: vec![
+            rosc::OscType::Int(1),
+            rosc::OscType::Int(103),
+            rosc::OscType::Int(0),
+        ],
+    }
+}
+
+fn select_button_message(context: &Context) -> Option<OscMessage> {
+    match context.mode {
+        Mode::StepSelect => {
+            if context.tick % 12 == 0 {
+                Some(select_button_on_message())
+            } else if (context.tick + 6) % 12 == 0 {
+                Some(select_button_off_message())
+            } else {
+                None
+            }
+        }
+        _ => {
+            if context.tick % 12 == 0 {
+                Some(select_button_off_message())
+            } else {
+                None
+            }
+        }
+    }
 }
 
 #[test]
@@ -221,4 +269,59 @@ fn test_turn_light_off_message() {
 fn test_from_midi_note_number() {
     let pad = Pad::from_midi_note_number(36);
     assert_eq!(1, pad.number);
+}
+
+#[test]
+fn test_select_button_message() {
+    let context = Context {
+        mode: Mode::StepSelect,
+        tick: 0,
+        ..Context::default()
+    };
+    let message = select_button_message(&context).unwrap();
+    assert_eq!("/atom/control_change", message.addr);
+    assert_eq!(rosc::OscType::Int(1), message.args[0]);
+    assert_eq!(rosc::OscType::Int(103), message.args[1]);
+    assert_eq!(rosc::OscType::Int(127), message.args[2]);
+
+    let context = Context {
+        mode: Mode::StepSelect,
+        tick: 6,
+        ..Context::default()
+    };
+    let message = select_button_message(&context).unwrap();
+    assert_eq!("/atom/control_change", message.addr);
+    assert_eq!(rosc::OscType::Int(1), message.args[0]);
+    assert_eq!(rosc::OscType::Int(103), message.args[1]);
+    assert_eq!(rosc::OscType::Int(0), message.args[2]);
+
+    let context = Context {
+        mode: Mode::StepSelect,
+        tick: 12,
+        ..Context::default()
+    };
+    let message = select_button_message(&context).unwrap();
+    assert_eq!("/atom/control_change", message.addr);
+    assert_eq!(rosc::OscType::Int(1), message.args[0]);
+    assert_eq!(rosc::OscType::Int(103), message.args[1]);
+    assert_eq!(rosc::OscType::Int(127), message.args[2]);
+
+    let context = Context {
+        mode: Mode::Step,
+        tick: 1,
+        ..Context::default()
+    };
+    let message = select_button_message(&context);
+    assert!(message.is_none());
+
+    let context = Context {
+        mode: Mode::Step,
+        tick: 0,
+        ..Context::default()
+    };
+    let message = select_button_message(&context).unwrap();
+    assert_eq!("/atom/control_change", message.addr);
+    assert_eq!(rosc::OscType::Int(1), message.args[0]);
+    assert_eq!(rosc::OscType::Int(103), message.args[1]);
+    assert_eq!(rosc::OscType::Int(0), message.args[2]);
 }
