@@ -28,7 +28,7 @@ impl Context {
     pub fn default() -> Context {
         Context {
             step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
-            euclidean_sequencer: EuclideanSequencer::empty(),
+            euclidean_sequencer: EuclideanSequencer::with_active_note_number(36),
             one_shot_sequencer: OneShotSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,

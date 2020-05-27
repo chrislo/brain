@@ -16,6 +16,13 @@ impl EuclideanSequencer {
         }
     }
 
+    pub fn with_active_note_number(note_number: i32) -> EuclideanSequencer {
+        EuclideanSequencer {
+            active_note_number: note_number,
+            ..EuclideanSequencer::empty()
+        }
+    }
+
     pub fn events_for_tick(&self, tick: i32) -> Vec<Event> {
         let mut events = vec![];
 
