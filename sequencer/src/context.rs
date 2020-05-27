@@ -116,24 +116,9 @@ impl Context {
         }
     }
 
-    fn toggle_mode(&self) -> Context {
-        match self.mode {
-            Mode::Step | Mode::StepSelect => self.clone(),
-            Mode::StepEdit => Context {
-                mode: Mode::Euclidean,
-                ..self.clone()
-            },
-            Mode::Euclidean => Context {
-                mode: Mode::StepEdit,
-                ..self.clone()
-            },
-        }
-    }
-
     fn process_message(&self, message: &Message) -> Context {
         match self.mode {
             Mode::Euclidean => match message {
-                Message::Select => self.toggle_mode(),
                 Message::Left => self.set_euclidean_sequencer(
                     self.euclidean_sequencer.decrement_active_note_number(),
                 ),
