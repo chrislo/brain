@@ -21,6 +21,7 @@ pub enum Mode {
     StepEdit,
     Step,
     StepSelect,
+    SequencerSelect,
 }
 
 impl Context {
@@ -204,6 +205,7 @@ impl Context {
                 },
                 _ => self.clone(),
             },
+            Mode::SequencerSelect => self.clone(),
         }
     }
 }
