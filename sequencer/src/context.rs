@@ -120,6 +120,7 @@ impl Context {
     fn process_message(&self, message: &Message) -> Context {
         match self.mode {
             Mode::Euclidean => match message {
+                Message::Up => self.set_mode(Mode::SequencerSelect),
                 Message::Left => self.set_euclidean_sequencer(
                     self.euclidean_sequencer.decrement_active_note_number(),
                 ),
@@ -162,6 +163,7 @@ impl Context {
                 _ => self.clone(),
             },
             Mode::Step => match message {
+                Message::Up => self.set_mode(Mode::SequencerSelect),
                 Message::Select => self.set_mode(Mode::StepSelect),
                 Message::NoteOn { note_number: n } => {
                     let new_sequencer = self.one_shot_sequencer.add_one_shot(*n, self.tick + 1);
@@ -205,7 +207,11 @@ impl Context {
                 },
                 _ => self.clone(),
             },
-            Mode::SequencerSelect => self.clone(),
+            Mode::SequencerSelect => match message {
+                Message::NoteOn { note_number: 36 } => self.set_mode(Mode::Step),
+                Message::NoteOn { note_number: 37 } => self.set_mode(Mode::Euclidean),
+                _ => self.clone(),
+            },
         }
     }
 }
