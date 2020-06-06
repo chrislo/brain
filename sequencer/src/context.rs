@@ -13,6 +13,7 @@ pub struct Context {
     pub bpm: f32,
     pub mode: Mode,
     pub tick: i32,
+    pub shift: bool,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -34,6 +35,7 @@ impl Context {
             bpm: 120.0,
             mode: Mode::Step,
             tick: 0,
+            shift: false,
         }
     }
 
@@ -80,12 +82,8 @@ impl Context {
 
         Context {
             step_sequencer: new_step_sequencer,
-            euclidean_sequencer: self.euclidean_sequencer.clone(),
-            one_shot_sequencer: self.one_shot_sequencer.clone(),
-            swing_amount: self.swing_amount,
-            bpm: self.bpm,
             mode: Mode::StepEdit,
-            tick: self.tick,
+            ..self.clone()
         }
     }
 
@@ -113,6 +111,13 @@ impl Context {
     fn set_mode(&self, mode: Mode) -> Context {
         Context {
             mode: mode,
+            ..self.clone()
+        }
+    }
+
+    fn set_shift(&self, value: bool) -> Context {
+        Context {
+            shift: value,
             ..self.clone()
         }
     }
@@ -165,45 +170,27 @@ impl Context {
             Mode::Step => match message {
                 Message::Up => self.set_mode(Mode::SequencerSelect),
                 Message::Select => self.set_mode(Mode::StepSelect),
+                Message::ShiftOn => self.set_shift(true),
+                Message::ShiftOff => self.set_shift(false),
                 Message::NoteOn { note_number: n } => {
                     let new_sequencer = self.one_shot_sequencer.add_one_shot(*n, self.tick + 1);
                     self.set_one_shot_sequencer(new_sequencer)
                 }
                 Message::KnobIncrement { number: 1 } => Context {
-                    step_sequencer: self.step_sequencer.clone(),
-                    euclidean_sequencer: self.euclidean_sequencer.clone(),
-                    one_shot_sequencer: self.one_shot_sequencer.clone(),
-                    swing_amount: self.swing_amount,
                     bpm: (self.bpm + 1.0).min(240.0),
-                    mode: self.mode,
-                    tick: self.tick,
+                    ..self.clone()
                 },
                 Message::KnobDecrement { number: 1 } => Context {
-                    step_sequencer: self.step_sequencer.clone(),
-                    euclidean_sequencer: self.euclidean_sequencer.clone(),
-                    one_shot_sequencer: self.one_shot_sequencer.clone(),
-                    swing_amount: self.swing_amount,
                     bpm: (self.bpm - 1.0).max(30.0),
-                    mode: self.mode,
-                    tick: self.tick,
+                    ..self.clone()
                 },
                 Message::KnobIncrement { number: 2 } => Context {
-                    step_sequencer: self.step_sequencer.clone(),
-                    euclidean_sequencer: self.euclidean_sequencer.clone(),
-                    one_shot_sequencer: self.one_shot_sequencer.clone(),
                     swing_amount: std::cmp::min(self.swing_amount + 1, 100),
-                    bpm: self.bpm,
-                    mode: self.mode,
-                    tick: self.tick,
+                    ..self.clone()
                 },
                 Message::KnobDecrement { number: 2 } => Context {
-                    step_sequencer: self.step_sequencer.clone(),
-                    euclidean_sequencer: self.euclidean_sequencer.clone(),
-                    one_shot_sequencer: self.one_shot_sequencer.clone(),
                     swing_amount: std::cmp::max(self.swing_amount - 1, 0),
-                    bpm: self.bpm,
-                    mode: self.mode,
-                    tick: self.tick,
+                    ..self.clone()
                 },
                 _ => self.clone(),
             },
