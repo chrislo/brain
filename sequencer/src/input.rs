@@ -11,6 +11,8 @@ pub enum Message {
     Right,
     Select,
     Up,
+    ShiftOn,
+    ShiftOff,
     Unhandled,
 }
 
@@ -57,6 +59,10 @@ fn parse_incoming_osc_message(packet: OscPacket) -> Message {
                             Message::Up
                         } else if *c == 103 && *v == 127 {
                             Message::Select
+                        } else if *c == 32 && *v == 127 {
+                            Message::ShiftOn
+                        } else if *c == 32 && *v == 0 {
+                            Message::ShiftOff
                         } else if *c >= 14 && *c <= 17 && *v == 1 {
                             Message::KnobIncrement { number: c - 13 }
                         } else if *c >= 14 && *c <= 17 && *v == 65 {
@@ -136,6 +142,26 @@ fn test_parse_incoming_up_message() {
     });
     let msg = parse_incoming_osc_message(packet);
     assert!(matches!(msg, Message::Up));
+}
+
+#[test]
+fn test_parse_incoming_shift_on_message() {
+    let packet = OscPacket::Message(OscMessage {
+        addr: "/midi/atom/1/1/control_change".to_string(),
+        args: vec![rosc::OscType::Int(32), rosc::OscType::Int(127)],
+    });
+    let msg = parse_incoming_osc_message(packet);
+    assert!(matches!(msg, Message::ShiftOn));
+}
+
+#[test]
+fn test_parse_incoming_shift_off_message() {
+    let packet = OscPacket::Message(OscMessage {
+        addr: "/midi/atom/1/1/control_change".to_string(),
+        args: vec![rosc::OscType::Int(32), rosc::OscType::Int(0)],
+    });
+    let msg = parse_incoming_osc_message(packet);
+    assert!(matches!(msg, Message::ShiftOff));
 }
 
 #[test]
