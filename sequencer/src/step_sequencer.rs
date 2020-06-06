@@ -4,6 +4,7 @@ use std::collections::HashSet;
 #[derive(Debug, Clone)]
 pub struct StepSequencer {
     steps: HashSet<Step>,
+    muted_notes: HashSet<i32>,
     pub active_note_number: i32,
 }
 
@@ -24,6 +25,7 @@ impl StepSequencer {
         StepSequencer {
             steps: HashSet::new(),
             active_note_number: 36,
+            muted_notes: HashSet::new(),
         }
     }
 
@@ -35,6 +37,7 @@ impl StepSequencer {
             .clone()
             .into_iter()
             .filter(|s| offset_into_track == s.tick)
+            .filter(|s| !self.muted_notes.contains(&s.note_number))
             .map(|s| Event {
                 note_number: s.note_number,
             })
@@ -60,6 +63,7 @@ impl StepSequencer {
         StepSequencer {
             steps: steps,
             active_note_number: self.active_note_number,
+            muted_notes: self.muted_notes.clone(),
         }
     }
 
@@ -84,6 +88,7 @@ impl StepSequencer {
         StepSequencer {
             steps: self.steps.clone(),
             active_note_number: self.active_note_number + 1,
+            muted_notes: self.muted_notes.clone(),
         }
     }
 
@@ -91,6 +96,7 @@ impl StepSequencer {
         StepSequencer {
             steps: self.steps.clone(),
             active_note_number: self.active_note_number - 1,
+            muted_notes: self.muted_notes.clone(),
         }
     }
 
@@ -98,6 +104,7 @@ impl StepSequencer {
         StepSequencer {
             steps: self.steps.clone(),
             active_note_number: note_number,
+            muted_notes: self.muted_notes.clone(),
         }
     }
 
@@ -107,6 +114,21 @@ impl StepSequencer {
         let ticks_per_sixteenth = 6;
 
         (offset_into_track / ticks_per_sixteenth) + 1
+    }
+
+    pub fn toggle_mute(&self, note_number: i32) -> StepSequencer {
+        let mut muted_notes = self.muted_notes.clone();
+
+        if muted_notes.contains(&note_number) {
+            muted_notes.remove(&note_number);
+        } else {
+            muted_notes.insert(note_number);
+        }
+        StepSequencer {
+            steps: self.steps.clone(),
+            active_note_number: self.active_note_number,
+            muted_notes: muted_notes,
+        }
     }
 }
 
@@ -235,4 +257,19 @@ fn test_active_notes() {
     assert_eq!(2, sequencer.events_for_tick(0).len());
     assert!(sequencer.active_notes(0).contains(&1));
     assert!(sequencer.active_notes(0).contains(&3));
+}
+
+#[test]
+fn test_muted_notes() {
+    let sequencer = StepSequencer::empty()
+        .set_active_note_number(1)
+        .toggle_sixteenth(1);
+
+    assert_eq!(1, sequencer.events_for_tick(0).len());
+    assert!(sequencer.active_notes(0).contains(&1));
+
+    let muted_sequencer = sequencer.toggle_mute(1);
+
+    assert_eq!(0, muted_sequencer.events_for_tick(0).len());
+    assert!(!muted_sequencer.active_notes(0).contains(&1));
 }
