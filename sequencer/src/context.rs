@@ -172,10 +172,16 @@ impl Context {
                 Message::Select => self.set_mode(Mode::StepSelect),
                 Message::ShiftOn => self.set_shift(true),
                 Message::ShiftOff => self.set_shift(false),
-                Message::NoteOn { note_number: n } => {
-                    let new_sequencer = self.one_shot_sequencer.add_one_shot(*n, self.tick + 1);
-                    self.set_one_shot_sequencer(new_sequencer)
-                }
+                Message::NoteOn { note_number: n } => match self.shift {
+                    false => {
+                        let new_sequencer = self.one_shot_sequencer.add_one_shot(*n, self.tick + 1);
+                        self.set_one_shot_sequencer(new_sequencer)
+                    }
+                    true => {
+                        let new_sequencer = self.step_sequencer.toggle_mute(*n);
+                        self.set_step_sequencer(new_sequencer)
+                    }
+                },
                 Message::KnobIncrement { number: 1 } => Context {
                     bpm: (self.bpm + 1.0).min(240.0),
                     ..self.clone()
