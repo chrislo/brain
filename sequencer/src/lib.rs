@@ -6,4 +6,5 @@ pub mod event;
 pub mod input;
 pub mod one_shot_sequencer;
 pub mod output;
+pub mod sequence;
 pub mod step_sequencer;
