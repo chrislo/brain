@@ -1,9 +1,16 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, Eq)]
 pub struct Trigger {
     note_number: i32,
     offset: i32,
+}
+
+impl PartialEq for Trigger {
+    fn eq(&self, other: &Self) -> bool {
+        self.note_number == other.note_number && self.offset == other.offset
+    }
 }
 
 #[derive(Debug, Clone, Hash, Eq)]
@@ -17,14 +24,20 @@ impl PartialEq for Step {
 
 #[derive(Debug, Clone)]
 pub struct Sequence {
-    triggers: HashMap<Step, Trigger>,
+    triggers: HashMap<Step, HashSet<Trigger>>,
     number_of_steps_in_sequence: i32,
 }
 
 impl Sequence {
     pub fn empty() -> Sequence {
+        let mut triggers = HashMap::new();
+
+        for n in 1..=16 {
+            triggers.insert(Step(n), HashSet::new());
+        }
+
         Sequence {
-            triggers: HashMap::new(),
+            triggers: triggers,
             number_of_steps_in_sequence: 16,
         }
     }
@@ -38,19 +51,32 @@ impl Sequence {
 
         self.triggers
             .get(&nearest_step)
+            .unwrap()
+            .clone()
             .into_iter()
             .filter(|t| t.offset == offset_into_step)
-            .cloned()
             .collect()
     }
 
     pub fn trigger_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
-        let trigger = Trigger {
+        let new_trigger = Trigger {
             note_number: note_number,
             offset: 0,
         };
         let mut triggers = self.triggers.clone();
-        triggers.insert(step, trigger);
+
+        match self.triggers.get(&step) {
+            Some(t) => {
+                let mut step_triggers = t.clone();
+                step_triggers.insert(new_trigger);
+                triggers.insert(step, step_triggers);
+            }
+            None => {
+                let mut step_triggers = HashSet::new();
+                step_triggers.insert(new_trigger);
+                triggers.insert(step, step_triggers);
+            }
+        }
 
         Sequence {
             triggers: triggers,
@@ -73,4 +99,24 @@ fn test_adding_trigger_to_sequence() {
             assert!(triggers.is_empty());
         }
     }
+}
+
+#[test]
+fn test_adding_two_triggers_to_sequence() {
+    let sequence = Sequence::empty()
+        .trigger_note_number_at_step(1, Step(1))
+        .trigger_note_number_at_step(2, Step(1));
+
+    let triggers = sequence.triggers_for_tick(0);
+    assert_eq!(2, triggers.len());
+}
+
+#[test]
+fn test_adding_the_same_trigger_twice_to_sequence() {
+    let sequence = Sequence::empty()
+        .trigger_note_number_at_step(1, Step(1))
+        .trigger_note_number_at_step(1, Step(1));
+
+    let triggers = sequence.triggers_for_tick(0);
+    assert_eq!(1, triggers.len());
 }
