@@ -83,6 +83,14 @@ impl Sequence {
             ..self.clone()
         }
     }
+
+    pub fn current_step(&self, tick: i32) -> Step {
+        let ticks_per_step = 6;
+        let sequence_length_in_ticks = self.number_of_steps_in_sequence * ticks_per_step;
+        let offset_into_sequence = tick % sequence_length_in_ticks;
+
+        Step((offset_into_sequence / ticks_per_step) + 1)
+    }
 }
 
 #[test]
@@ -119,4 +127,15 @@ fn test_adding_the_same_trigger_twice_to_sequence() {
 
     let triggers = sequence.triggers_for_tick(0);
     assert_eq!(1, triggers.len());
+}
+
+#[test]
+fn test_current_step() {
+    let sequencer = Sequence::empty();
+
+    assert_eq!(Step(1), sequencer.current_step(0));
+    assert_eq!(Step(1), sequencer.current_step(1));
+    assert_eq!(Step(2), sequencer.current_step(6));
+    assert_eq!(Step(16), sequencer.current_step(95));
+    assert_eq!(Step(1), sequencer.current_step(96));
 }
