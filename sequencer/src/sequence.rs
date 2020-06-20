@@ -63,7 +63,7 @@ impl Sequence {
 fn test_adding_trigger_to_sequence() {
     let sequence = Sequence::empty().trigger_note_number_at_step(1, Step(1));
 
-    for n in 0..96 {
+    for n in 0..=96 {
         let triggers = sequence.triggers_for_tick(n);
         if n == 0 {
             assert_eq!(1, triggers.len());
