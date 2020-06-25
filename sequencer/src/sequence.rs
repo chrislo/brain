@@ -13,7 +13,7 @@ impl PartialEq for Trigger {
     }
 }
 
-#[derive(Debug, Clone, Hash, Eq)]
+#[derive(Debug, Clone, Copy, Hash, Eq)]
 pub struct Step(i32);
 
 impl PartialEq for Step {
@@ -91,6 +91,18 @@ impl Sequence {
 
         Step((offset_into_sequence / ticks_per_step) + 1)
     }
+
+    pub fn active_steps(&self) -> HashSet<Step> {
+        let mut active_steps = HashSet::new();
+
+        for (s, t) in self.triggers.iter() {
+            if !t.is_empty() {
+                active_steps.insert(*s);
+            }
+        }
+
+        active_steps
+    }
 }
 
 #[test]
@@ -138,4 +150,15 @@ fn test_current_step() {
     assert_eq!(Step(2), sequencer.current_step(6));
     assert_eq!(Step(16), sequencer.current_step(95));
     assert_eq!(Step(1), sequencer.current_step(96));
+}
+
+#[test]
+fn test_active_steps() {
+    let sequence = Sequence::empty()
+        .trigger_note_number_at_step(1, Step(1))
+        .trigger_note_number_at_step(1, Step(3));
+
+    assert_eq!(2, sequence.active_steps().len());
+    assert!(sequence.active_steps().contains(&Step(1)));
+    assert!(sequence.active_steps().contains(&Step(3)));
 }
