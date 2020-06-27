@@ -103,6 +103,28 @@ impl Sequence {
 
         active_steps
     }
+
+    pub fn set_length(&self, number_of_steps: i32) -> Sequence {
+        let mut triggers = HashMap::new();
+
+        for n in 1..=number_of_steps {
+            let step = Step(n);
+            match self.triggers.get(&step) {
+                Some(t) => {
+                    triggers.insert(step, t.clone());
+                }
+                None => {
+                    triggers.insert(step, HashSet::new());
+                }
+            }
+        }
+
+        Sequence {
+            triggers: triggers,
+            number_of_steps: number_of_steps,
+            ..self.clone()
+        }
+    }
 }
 
 #[test]
@@ -161,4 +183,41 @@ fn test_active_steps() {
     assert_eq!(2, sequence.active_steps().len());
     assert!(sequence.active_steps().contains(&Step(1)));
     assert!(sequence.active_steps().contains(&Step(3)));
+}
+
+#[test]
+fn test_set_length_shorter() {
+    let sequence = Sequence::empty()
+        .trigger_note_number_at_step(1, Step(8))
+        .trigger_note_number_at_step(1, Step(16));
+
+    assert_eq!(2, sequence.active_steps().len());
+    assert!(sequence.active_steps().contains(&Step(8)));
+    assert!(sequence.active_steps().contains(&Step(16)));
+
+    let shorter_sequence = sequence.set_length(8);
+    assert_eq!(1, shorter_sequence.active_steps().len());
+    assert!(shorter_sequence.active_steps().contains(&Step(8)));
+    assert_eq!(8, shorter_sequence.number_of_steps);
+}
+
+#[test]
+fn test_set_length_longer() {
+    let sequence = Sequence::empty()
+        .set_length(8)
+        .trigger_note_number_at_step(1, Step(8));
+
+    assert_eq!(1, sequence.active_steps().len());
+    assert!(sequence.active_steps().contains(&Step(8)));
+    assert_eq!(8, sequence.number_of_steps);
+
+    let longer_sequence = sequence.set_length(16);
+    assert_eq!(1, longer_sequence.active_steps().len());
+    assert!(longer_sequence.active_steps().contains(&Step(8)));
+    assert_eq!(16, longer_sequence.number_of_steps);
+
+    // Check we can still iterate over sequence when made longer
+    for n in 0..=96 {
+        sequence.triggers_for_tick(n);
+    }
 }
