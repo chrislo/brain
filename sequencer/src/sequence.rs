@@ -25,7 +25,7 @@ impl PartialEq for Step {
 #[derive(Debug, Clone)]
 pub struct Sequence {
     triggers: HashMap<Step, HashSet<Trigger>>,
-    number_of_steps_in_sequence: i32,
+    number_of_steps: i32,
 }
 
 impl Sequence {
@@ -38,13 +38,13 @@ impl Sequence {
 
         Sequence {
             triggers: triggers,
-            number_of_steps_in_sequence: 16,
+            number_of_steps: 16,
         }
     }
 
     pub fn triggers_for_tick(&self, tick: i32) -> Vec<Trigger> {
         let ticks_per_step = 6;
-        let sequence_length_in_ticks = self.number_of_steps_in_sequence * ticks_per_step;
+        let sequence_length_in_ticks = self.number_of_steps * ticks_per_step;
         let offset_into_sequence = tick % sequence_length_in_ticks;
         let nearest_step = Step((offset_into_sequence / ticks_per_step) + 1);
         let offset_into_step = offset_into_sequence % ticks_per_step;
@@ -86,7 +86,7 @@ impl Sequence {
 
     pub fn current_step(&self, tick: i32) -> Step {
         let ticks_per_step = 6;
-        let sequence_length_in_ticks = self.number_of_steps_in_sequence * ticks_per_step;
+        let sequence_length_in_ticks = self.number_of_steps * ticks_per_step;
         let offset_into_sequence = tick % sequence_length_in_ticks;
 
         Step((offset_into_sequence / ticks_per_step) + 1)
