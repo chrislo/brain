@@ -264,3 +264,22 @@ fn test_euclidean_fill() {
     let sequence = Sequence::empty().set_length(2).euclidean_fill(1, 0);
     assert_eq!(0, sequence.active_steps().len());
 }
+
+#[test]
+fn test_rotate() {
+    let sequence = Sequence::empty()
+        .set_length(3)
+        .trigger_note_number_at_step(1, Step(1));
+
+    assert_eq!(1, sequence.rotate(1).active_steps().len());
+    assert!(sequence.rotate(1).active_steps().contains(&Step(2)));
+
+    assert_eq!(1, sequence.rotate(2).active_steps().len());
+    assert!(sequence.rotate(2).active_steps().contains(&Step(3)));
+
+    assert_eq!(1, sequence.rotate(3).active_steps().len());
+    assert!(sequence.rotate(3).active_steps().contains(&Step(1)));
+
+    assert_eq!(1, sequence.rotate(-1).active_steps().len());
+    assert!(sequence.rotate(-1).active_steps().contains(&Step(3)));
+}
