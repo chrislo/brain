@@ -125,6 +125,23 @@ impl Sequence {
             ..self.clone()
         }
     }
+
+    pub fn euclidean_fill(&self, note_number: i32, onsets: i32) -> Sequence {
+        let slope = onsets as f32 / self.number_of_steps as f32;
+        let mut previous = 1;
+        let mut sequence = Sequence::empty().set_length(self.number_of_steps);
+
+        if onsets > 0 {
+            for i in 0..self.number_of_steps {
+                let current = (i as f32 * slope).floor() as i32;
+                if current != previous {
+                    sequence = sequence.trigger_note_number_at_step(note_number, Step(i + 1));
+                }
+                previous = current;
+            }
+        }
+        sequence
+    }
 }
 
 #[test]
@@ -220,4 +237,30 @@ fn test_set_length_longer() {
     for n in 0..=96 {
         sequence.triggers_for_tick(n);
     }
+}
+
+#[test]
+fn test_euclidean_fill() {
+    let sequence = Sequence::empty().set_length(16).euclidean_fill(1, 4);
+    assert_eq!(4, sequence.active_steps().len());
+    assert!(sequence.active_steps().contains(&Step(1)));
+    assert!(sequence.active_steps().contains(&Step(5)));
+    assert!(sequence.active_steps().contains(&Step(9)));
+    assert!(sequence.active_steps().contains(&Step(13)));
+
+    let sequence = Sequence::empty().set_length(12).euclidean_fill(1, 5);
+    assert_eq!(5, sequence.active_steps().len());
+    assert!(sequence.active_steps().contains(&Step(1)));
+    assert!(sequence.active_steps().contains(&Step(4)));
+    assert!(sequence.active_steps().contains(&Step(6)));
+    assert!(sequence.active_steps().contains(&Step(9)));
+    assert!(sequence.active_steps().contains(&Step(11)));
+
+    let sequence = Sequence::empty().set_length(2).euclidean_fill(1, 3);
+    assert_eq!(2, sequence.active_steps().len());
+    assert!(sequence.active_steps().contains(&Step(1)));
+    assert!(sequence.active_steps().contains(&Step(2)));
+
+    let sequence = Sequence::empty().set_length(2).euclidean_fill(1, 0);
+    assert_eq!(0, sequence.active_steps().len());
 }
