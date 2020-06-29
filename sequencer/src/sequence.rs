@@ -142,6 +142,20 @@ impl Sequence {
         }
         sequence
     }
+
+    pub fn rotate(&self, rotation: i32) -> Sequence {
+        let mut triggers = HashMap::new();
+
+        for (s, t) in self.triggers.iter() {
+            let new_step_number = (s.0 - 1 + rotation).rem_euclid(3) + 1;
+            triggers.insert(Step(new_step_number), t.clone());
+        }
+
+        Sequence {
+            triggers: triggers,
+            ..self.clone()
+        }
+    }
 }
 
 #[test]
@@ -274,12 +288,18 @@ fn test_rotate() {
     assert_eq!(1, sequence.rotate(1).active_steps().len());
     assert!(sequence.rotate(1).active_steps().contains(&Step(2)));
 
-    assert_eq!(1, sequence.rotate(2).active_steps().len());
-    assert!(sequence.rotate(2).active_steps().contains(&Step(3)));
-
     assert_eq!(1, sequence.rotate(3).active_steps().len());
     assert!(sequence.rotate(3).active_steps().contains(&Step(1)));
 
+    assert_eq!(1, sequence.rotate(4).active_steps().len());
+    assert!(sequence.rotate(4).active_steps().contains(&Step(2)));
+
     assert_eq!(1, sequence.rotate(-1).active_steps().len());
     assert!(sequence.rotate(-1).active_steps().contains(&Step(3)));
+
+    assert_eq!(1, sequence.rotate(-4).active_steps().len());
+    assert!(sequence.rotate(-4).active_steps().contains(&Step(3)));
+
+    assert_eq!(1, sequence.rotate(0).active_steps().len());
+    assert!(sequence.rotate(0).active_steps().contains(&Step(1)));
 }
