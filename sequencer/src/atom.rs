@@ -111,10 +111,6 @@ fn current_pad(context: &Context) -> Option<Pad> {
             let current_position = context.step_sequencer.current_position(context.tick);
             Some(Pad::new(current_position))
         }
-        Mode::Euclidean => {
-            let current_position = context.euclidean_sequencer.current_position(context.tick);
-            Some(Pad::new(current_position))
-        }
         _ => None,
     }
 }
@@ -123,12 +119,6 @@ fn active_pads(context: &Context) -> HashSet<Pad> {
     match context.mode {
         Mode::StepEdit => context
             .step_sequencer
-            .active_sixteenths()
-            .iter()
-            .map(|s| Pad::new(*s))
-            .collect(),
-        Mode::Euclidean => context
-            .euclidean_sequencer
             .active_sixteenths()
             .iter()
             .map(|s| Pad::new(*s))
@@ -205,9 +195,6 @@ fn test_message_to_addr() {
 #[cfg(test)]
 use crate::step_sequencer::StepSequencer;
 
-#[cfg(test)]
-use crate::euclidean_sequencer::EuclideanSequencer;
-
 #[test]
 fn test_active_pads_step_sequencer() {
     let context = Context {
@@ -218,18 +205,6 @@ fn test_active_pads_step_sequencer() {
 
     assert_eq!(1, active_pads(&context).len());
     assert!(active_pads(&context).contains(&Pad::new(2)));
-}
-
-#[test]
-fn test_active_pads_euclidean_sequencer() {
-    let context = Context {
-        euclidean_sequencer: EuclideanSequencer::empty().increment_onsets(),
-        mode: Mode::Euclidean,
-        ..Context::default()
-    };
-
-    assert_eq!(1, active_pads(&context).len());
-    assert!(active_pads(&context).contains(&Pad::new(1)));
 }
 
 #[test]

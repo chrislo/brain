@@ -1,4 +1,3 @@
-use crate::euclidean_sequencer::EuclideanSequencer;
 use crate::event::Event;
 use crate::input::Message;
 use crate::one_shot_sequencer::OneShotSequencer;
@@ -7,7 +6,6 @@ use crate::step_sequencer::StepSequencer;
 #[derive(Debug, Clone)]
 pub struct Context {
     pub step_sequencer: StepSequencer,
-    pub euclidean_sequencer: EuclideanSequencer,
     pub one_shot_sequencer: OneShotSequencer,
     pub swing_amount: i32,
     pub bpm: f32,
@@ -18,7 +16,6 @@ pub struct Context {
 
 #[derive(Debug, Copy, Clone)]
 pub enum Mode {
-    Euclidean,
     StepEdit,
     Step,
     StepSelect,
@@ -29,7 +26,6 @@ impl Context {
     pub fn default() -> Context {
         Context {
             step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
-            euclidean_sequencer: EuclideanSequencer::with_active_note_number(36),
             one_shot_sequencer: OneShotSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
@@ -69,10 +65,8 @@ impl Context {
     fn events_for_tick(&self, tick_number: i32) -> Vec<Event> {
         let mut events = vec![];
         let mut step_sequencer_events = swing(&self.step_sequencer, tick_number, self.swing_amount);
-        let mut euclidean_sequencer_events = self.euclidean_sequencer.events_for_tick(tick_number);
         let mut one_shot_sequencer_events = self.one_shot_sequencer.events_for_tick(tick_number);
         events.append(&mut step_sequencer_events);
-        events.append(&mut euclidean_sequencer_events);
         events.append(&mut one_shot_sequencer_events);
         events
     }
@@ -101,13 +95,6 @@ impl Context {
         }
     }
 
-    fn set_euclidean_sequencer(&self, euclidean_sequencer: EuclideanSequencer) -> Context {
-        Context {
-            euclidean_sequencer: euclidean_sequencer,
-            ..self.clone()
-        }
-    }
-
     fn set_mode(&self, mode: Mode) -> Context {
         Context {
             mode: mode,
@@ -124,34 +111,6 @@ impl Context {
 
     fn process_message(&self, message: &Message) -> Context {
         match self.mode {
-            Mode::Euclidean => match message {
-                Message::Up => self.set_mode(Mode::SequencerSelect),
-                Message::Left => self.set_euclidean_sequencer(
-                    self.euclidean_sequencer.decrement_active_note_number(),
-                ),
-                Message::Right => self.set_euclidean_sequencer(
-                    self.euclidean_sequencer.increment_active_note_number(),
-                ),
-                Message::KnobIncrement { number: 1 } => {
-                    self.set_euclidean_sequencer(self.euclidean_sequencer.increment_onsets())
-                }
-                Message::KnobDecrement { number: 1 } => {
-                    self.set_euclidean_sequencer(self.euclidean_sequencer.decrement_onsets())
-                }
-                Message::KnobIncrement { number: 2 } => {
-                    self.set_euclidean_sequencer(self.euclidean_sequencer.increment_pulses())
-                }
-                Message::KnobDecrement { number: 2 } => {
-                    self.set_euclidean_sequencer(self.euclidean_sequencer.decrement_pulses())
-                }
-                Message::KnobIncrement { number: 3 } => {
-                    self.set_euclidean_sequencer(self.euclidean_sequencer.increment_rotate())
-                }
-                Message::KnobDecrement { number: 3 } => {
-                    self.set_euclidean_sequencer(self.euclidean_sequencer.decrement_rotate())
-                }
-                _ => self.clone(),
-            },
             Mode::StepEdit => match message {
                 Message::NoteOn { note_number: n } => {
                     let new_step_sequencer = self
@@ -202,7 +161,6 @@ impl Context {
             },
             Mode::SequencerSelect => match message {
                 Message::NoteOn { note_number: 36 } => self.set_mode(Mode::Step),
-                Message::NoteOn { note_number: 37 } => self.set_mode(Mode::Euclidean),
                 _ => self.clone(),
             },
         }
@@ -267,23 +225,6 @@ fn test_advance_tick() {
     let context = Context::default();
     assert_eq!(0, context.tick);
     assert_eq!(1, context.advance_tick().tick);
-}
-
-#[test]
-fn test_events_with_two_sequencers() {
-    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2);
-    let euclidean_sequencer = EuclideanSequencer::empty().increment_onsets();
-    let context = Context::default()
-        .set_step_sequencer(step_sequencer)
-        .set_euclidean_sequencer(euclidean_sequencer);
-
-    let step_events = context.events_for_tick(6);
-    assert_eq!(1, step_events.len());
-    assert_eq!(36, step_events[0].note_number);
-
-    let euclidean_events = context.events_for_tick(0);
-    assert_eq!(1, euclidean_events.len());
-    assert_eq!(1, euclidean_events[0].note_number);
 }
 
 #[test]
