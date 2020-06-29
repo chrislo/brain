@@ -19,7 +19,6 @@ pub enum Mode {
     StepEdit,
     Step,
     StepSelect,
-    SequencerSelect,
 }
 
 impl Context {
@@ -127,7 +126,6 @@ impl Context {
                 _ => self.clone(),
             },
             Mode::Step => match message {
-                Message::Up => self.set_mode(Mode::SequencerSelect),
                 Message::Select => self.set_mode(Mode::StepSelect),
                 Message::ShiftOn => self.set_shift(true),
                 Message::ShiftOff => self.set_shift(false),
@@ -157,10 +155,6 @@ impl Context {
                     swing_amount: std::cmp::max(self.swing_amount - 1, 0),
                     ..self.clone()
                 },
-                _ => self.clone(),
-            },
-            Mode::SequencerSelect => match message {
-                Message::NoteOn { note_number: 36 } => self.set_mode(Mode::Step),
                 _ => self.clone(),
             },
         }

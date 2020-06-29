@@ -129,7 +129,6 @@ fn active_pads(context: &Context) -> HashSet<Pad> {
             .iter()
             .map(|n| Pad::from_midi_note_number(*n))
             .collect(),
-        Mode::SequencerSelect => HashSet::new(),
     }
 }
 
