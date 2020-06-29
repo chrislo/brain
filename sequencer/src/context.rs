@@ -1,12 +1,10 @@
 use crate::event::Event;
 use crate::input::Message;
-use crate::one_shot_sequencer::OneShotSequencer;
 use crate::step_sequencer::StepSequencer;
 
 #[derive(Debug, Clone)]
 pub struct Context {
     pub step_sequencer: StepSequencer,
-    pub one_shot_sequencer: OneShotSequencer,
     pub swing_amount: i32,
     pub bpm: f32,
     pub mode: Mode,
@@ -25,7 +23,6 @@ impl Context {
     pub fn default() -> Context {
         Context {
             step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
-            one_shot_sequencer: OneShotSequencer::empty(),
             swing_amount: 0,
             bpm: 120.0,
             mode: Mode::Step,
@@ -64,9 +61,7 @@ impl Context {
     fn events_for_tick(&self, tick_number: i32) -> Vec<Event> {
         let mut events = vec![];
         let mut step_sequencer_events = swing(&self.step_sequencer, tick_number, self.swing_amount);
-        let mut one_shot_sequencer_events = self.one_shot_sequencer.events_for_tick(tick_number);
         events.append(&mut step_sequencer_events);
-        events.append(&mut one_shot_sequencer_events);
         events
     }
 
@@ -83,13 +78,6 @@ impl Context {
     fn set_step_sequencer(&self, step_sequencer: StepSequencer) -> Context {
         Context {
             step_sequencer: step_sequencer,
-            ..self.clone()
-        }
-    }
-
-    fn set_one_shot_sequencer(&self, one_shot_sequencer: OneShotSequencer) -> Context {
-        Context {
-            one_shot_sequencer: one_shot_sequencer,
             ..self.clone()
         }
     }
@@ -130,10 +118,7 @@ impl Context {
                 Message::ShiftOn => self.set_shift(true),
                 Message::ShiftOff => self.set_shift(false),
                 Message::NoteOn { note_number: n } => match self.shift {
-                    false => {
-                        let new_sequencer = self.one_shot_sequencer.add_one_shot(*n, self.tick + 1);
-                        self.set_one_shot_sequencer(new_sequencer)
-                    }
+                    false => self.edit_step(*n),
                     true => {
                         let new_sequencer = self.step_sequencer.toggle_mute(*n);
                         self.set_step_sequencer(new_sequencer)
