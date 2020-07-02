@@ -16,7 +16,6 @@ pub struct Context {
 pub enum Mode {
     StepEdit,
     Step,
-    StepSelect,
 }
 
 impl Context {
@@ -82,6 +81,7 @@ impl Context {
         }
     }
 
+    #[allow(dead_code)]
     fn set_mode(&self, mode: Mode) -> Context {
         Context {
             mode: mode,
@@ -105,16 +105,9 @@ impl Context {
                         .toggle_sixteenth(note_number_to_sixteenth(*n));
                     self.set_step_sequencer(new_step_sequencer)
                 }
-                Message::Select => self.set_mode(Mode::StepSelect),
-                _ => self.clone(),
-            },
-            Mode::StepSelect => match message {
-                Message::Select => self.set_mode(Mode::Step),
-                Message::NoteOn { note_number: n } => self.edit_step(*n),
                 _ => self.clone(),
             },
             Mode::Step => match message {
-                Message::Select => self.set_mode(Mode::StepSelect),
                 Message::ShiftOn => self.set_shift(true),
                 Message::ShiftOff => self.set_shift(false),
                 Message::NoteOn { note_number: n } => match self.shift {
