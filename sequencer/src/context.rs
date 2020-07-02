@@ -5,7 +5,6 @@ use crate::step_sequencer::StepSequencer;
 #[derive(Debug, Clone)]
 pub struct Context {
     pub step_sequencer: StepSequencer,
-    pub swing_amount: i32,
     pub bpm: f32,
     pub mode: Mode,
     pub tick: i32,
@@ -22,7 +21,6 @@ impl Context {
     pub fn default() -> Context {
         Context {
             step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
-            swing_amount: 0,
             bpm: 120.0,
             mode: Mode::Step,
             tick: 0,
@@ -59,7 +57,7 @@ impl Context {
 
     fn events_for_tick(&self, tick_number: i32) -> Vec<Event> {
         let mut events = vec![];
-        let mut step_sequencer_events = swing(&self.step_sequencer, tick_number, self.swing_amount);
+        let mut step_sequencer_events = self.step_sequencer.events_for_tick(tick_number);
         events.append(&mut step_sequencer_events);
         events
     }
@@ -125,14 +123,6 @@ impl Context {
                     bpm: (self.bpm - 1.0).max(30.0),
                     ..self.clone()
                 },
-                Message::KnobIncrement { number: 2 } => Context {
-                    swing_amount: std::cmp::min(self.swing_amount + 1, 100),
-                    ..self.clone()
-                },
-                Message::KnobDecrement { number: 2 } => Context {
-                    swing_amount: std::cmp::max(self.swing_amount - 1, 0),
-                    ..self.clone()
-                },
                 _ => self.clone(),
             },
         }
@@ -141,45 +131,6 @@ impl Context {
 
 fn note_number_to_sixteenth(note_number: i32) -> i32 {
     note_number - 35
-}
-
-fn even_sixteenth(tick_number: i32) -> bool {
-    (((tick_number - 6) % 96) % 12) == 0
-}
-
-fn percentage_swing_to_ticks(swing_percentage: i32) -> i32 {
-    // Scale swing ticks between 0 and 6
-    let max_ticks = 6.;
-    (swing_percentage as f64 / (100. / max_ticks)).floor() as i32
-}
-
-fn swing(sequencer: &StepSequencer, tick_number: i32, swing_amount: i32) -> Vec<Event> {
-    let swing_amount = percentage_swing_to_ticks(swing_amount);
-    if swing_amount > 0 {
-        if even_sixteenth(tick_number) {
-            vec![]
-        } else if even_sixteenth(tick_number - swing_amount) {
-            sequencer.events_for_tick(tick_number - swing_amount)
-        } else {
-            sequencer.events_for_tick(tick_number)
-        }
-    } else {
-        sequencer.events_for_tick(tick_number)
-    }
-}
-
-#[test]
-fn test_even_sixteenth() {
-    let even_sixteenths = vec![6, 18, 30, 42, 54, 66, 78, 90, 102];
-    for tick_number in even_sixteenths {
-        assert!(even_sixteenth(tick_number));
-    }
-
-    assert!(!even_sixteenth(0));
-    assert!(!even_sixteenth(1));
-    assert!(!even_sixteenth(95));
-    assert!(!even_sixteenth(96));
-    assert!(!even_sixteenth(97));
 }
 
 #[test]
@@ -197,26 +148,6 @@ fn test_advance_tick() {
     let context = Context::default();
     assert_eq!(0, context.tick);
     assert_eq!(1, context.advance_tick().tick);
-}
-
-#[test]
-fn test_events_with_swing() {
-    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2);
-    let swing_amount = 20;
-
-    let context = Context {
-        step_sequencer: step_sequencer,
-        swing_amount: swing_amount,
-        mode: Mode::StepEdit,
-        ..Context::default()
-    };
-
-    let events = context.events_for_tick(6);
-    assert_eq!(0, events.len());
-
-    let events = context.events_for_tick(6 + percentage_swing_to_ticks(swing_amount));
-    assert_eq!(1, events.len());
-    assert_eq!(36, events[0].note_number);
 }
 
 #[test]
@@ -261,15 +192,4 @@ fn test_process_knob_1_bpm_set_message() {
 
     let processed_context = context.process_messages(vec![Message::KnobDecrement { number: 1 }]);
     assert_eq!(119.0, processed_context.bpm);
-}
-
-#[test]
-fn test_process_knob_2_swing_set_message() {
-    let context = Context::default().set_mode(Mode::Step);
-
-    let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 2 }]);
-    assert_eq!(1, processed_context.swing_amount);
-
-    let processed_context = context.process_messages(vec![Message::KnobDecrement { number: 2 }]);
-    assert_eq!(0, processed_context.swing_amount);
 }
