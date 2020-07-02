@@ -26,6 +26,7 @@ impl PartialEq for Step {
 pub struct Sequence {
     triggers: HashMap<Step, HashSet<Trigger>>,
     number_of_steps: i32,
+    mute: bool,
 }
 
 impl Sequence {
@@ -39,6 +40,7 @@ impl Sequence {
         Sequence {
             triggers: triggers,
             number_of_steps: 16,
+            mute: false,
         }
     }
 
@@ -49,13 +51,17 @@ impl Sequence {
         let nearest_step = Step((offset_into_sequence / ticks_per_step) + 1);
         let offset_into_step = offset_into_sequence % ticks_per_step;
 
-        self.triggers
-            .get(&nearest_step)
-            .unwrap()
-            .clone()
-            .into_iter()
-            .filter(|t| t.offset == offset_into_step)
-            .collect()
+        match self.mute {
+            false => self
+                .triggers
+                .get(&nearest_step)
+                .unwrap()
+                .clone()
+                .into_iter()
+                .filter(|t| t.offset == offset_into_step)
+                .collect(),
+            true => vec![],
+        }
     }
 
     pub fn trigger_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
@@ -153,6 +159,13 @@ impl Sequence {
 
         Sequence {
             triggers: triggers,
+            ..self.clone()
+        }
+    }
+
+    pub fn toggle_mute(&self) -> Sequence {
+        Sequence {
+            mute: !self.mute,
             ..self.clone()
         }
     }
@@ -302,4 +315,16 @@ fn test_rotate() {
 
     assert_eq!(1, sequence.rotate(0).active_steps().len());
     assert!(sequence.rotate(0).active_steps().contains(&Step(1)));
+}
+
+#[test]
+fn test_toggle_mute() {
+    let sequence = Sequence::empty()
+        .trigger_note_number_at_step(1, Step(1))
+        .toggle_mute();
+
+    for n in 0..=96 {
+        let triggers = sequence.triggers_for_tick(n);
+        assert!(triggers.is_empty());
+    }
 }
