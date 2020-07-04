@@ -14,7 +14,7 @@ impl PartialEq for Trigger {
 }
 
 #[derive(Debug, Clone, Copy, Hash, Eq)]
-pub struct Step(i32);
+pub struct Step(pub i32);
 
 impl PartialEq for Step {
     fn eq(&self, other: &Self) -> bool {
@@ -82,6 +82,44 @@ impl Sequence {
                 step_triggers.insert(new_trigger);
                 triggers.insert(step, step_triggers);
             }
+        }
+
+        Sequence {
+            triggers: triggers,
+            ..self.clone()
+        }
+    }
+
+    pub fn toggle_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
+        match self.has_note_number_at_step(note_number, step) {
+            true => self.remove_note_number_at_step(note_number, step),
+            false => self.trigger_note_number_at_step(note_number, step),
+        }
+    }
+
+    fn has_note_number_at_step(&self, note_number: i32, step: Step) -> bool {
+        match self.triggers.get(&step) {
+            Some(t) => t.contains(&Trigger {
+                note_number: note_number,
+                offset: 0,
+            }),
+            None => false,
+        }
+    }
+
+    fn remove_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
+        let mut triggers = self.triggers.clone();
+
+        match self.triggers.get(&step) {
+            Some(t) => {
+                let mut step_triggers = t.clone();
+                step_triggers.remove(&Trigger {
+                    note_number: note_number,
+                    offset: 0,
+                });
+                triggers.insert(step, step_triggers);
+            }
+            None => {}
         }
 
         Sequence {
@@ -331,4 +369,25 @@ fn test_toggle_mute() {
         let triggers = sequence.triggers_for_tick(n);
         assert!(triggers.is_empty());
     }
+}
+
+#[test]
+fn test_toggle_note_number_at_step() {
+    let sequence = Sequence::empty();
+
+    assert_eq!(
+        1,
+        sequence
+            .toggle_note_number_at_step(1, Step(1))
+            .active_steps()
+            .len()
+    );
+    assert_eq!(
+        0,
+        sequence
+            .toggle_note_number_at_step(1, Step(1))
+            .toggle_note_number_at_step(1, Step(1))
+            .active_steps()
+            .len()
+    );
 }

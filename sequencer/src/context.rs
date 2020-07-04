@@ -1,6 +1,7 @@
 use crate::event::Event;
 use crate::input::Message;
 use crate::sequence::Sequence;
+use crate::sequence::Step;
 use crate::step_sequencer::StepSequencer;
 use std::mem;
 
@@ -87,6 +88,19 @@ impl Context {
         }
     }
 
+    fn toggle_step_for_selected_sequence(&self, step_number: i32) -> Context {
+        let mut sequences = self.sequences.clone();
+        let new_sequence =
+            self.sequences[self.selected_sequence].toggle_note_number_at_step(1, Step(step_number));
+        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+
+        Context {
+            sequences: sequences,
+            ..self.clone()
+        }
+    }
+
+    #[allow(dead_code)]
     fn set_step_sequencer(&self, step_sequencer: StepSequencer) -> Context {
         Context {
             step_sequencer: step_sequencer,
@@ -113,10 +127,7 @@ impl Context {
         match self.mode {
             Mode::StepEdit => match message {
                 Message::NoteOn { note_number: n } => {
-                    let new_step_sequencer = self
-                        .step_sequencer
-                        .toggle_sixteenth(note_number_to_sixteenth(*n));
-                    self.set_step_sequencer(new_step_sequencer)
+                    self.toggle_step_for_selected_sequence(note_number_to_sixteenth(*n))
                 }
                 _ => self.clone(),
             },
@@ -167,17 +178,13 @@ fn test_advance_tick() {
 }
 
 #[test]
-fn test_process_note_on_message() {
-    let sequencer = StepSequencer::empty();
-    let context = Context::default()
-        .set_mode(Mode::StepEdit)
-        .set_step_sequencer(sequencer);
+fn test_process_note_on_message_to_toggle_step() {
+    let context = Context::default().select_sequence(1);
     let messages = vec![Message::NoteOn { note_number: 43 }];
-
     let processed_context = context.process_messages(messages);
-
-    let active_sixteenths = processed_context.step_sequencer.active_sixteenths();
-    assert_eq!(1, active_sixteenths.len());
+    let sequence = &processed_context.sequences[1];
+    println!("{:?}", processed_context);
+    assert_eq!(1, sequence.active_steps().len());
 }
 
 #[test]
@@ -198,25 +205,6 @@ fn test_process_note_on_message_to_mute_sequence() {
     let muted_sequence = &processed_context.sequences[8];
 
     assert_eq!(true, muted_sequence.is_muted());
-}
-
-#[test]
-fn test_process_two_messages() {
-    let sequencer = StepSequencer::empty();
-    let context = Context::default()
-        .set_mode(Mode::StepEdit)
-        .set_step_sequencer(sequencer);
-    let messages = vec![
-        Message::NoteOn { note_number: 42 },
-        Message::NoteOn { note_number: 43 },
-    ];
-
-    let processed_context = context.process_messages(messages);
-
-    assert_eq!(
-        2,
-        processed_context.step_sequencer.active_sixteenths().len()
-    );
 }
 
 #[test]
