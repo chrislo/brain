@@ -2,12 +2,13 @@ use crate::event::Event;
 use crate::input::Message;
 use crate::sequence::Sequence;
 use crate::step_sequencer::StepSequencer;
+use std::mem;
 
 #[derive(Debug, Clone)]
 pub struct Context {
     pub step_sequencer: StepSequencer,
     pub sequences: Vec<Sequence>,
-    pub selected_sequence: i32,
+    pub selected_sequence: usize,
     pub bpm: f32,
     pub mode: Mode,
     pub tick: i32,
@@ -67,10 +68,21 @@ impl Context {
         events
     }
 
-    fn select_sequence(&self, sequence_number: i32) -> Context {
+    fn select_sequence(&self, sequence_number: usize) -> Context {
         Context {
             selected_sequence: sequence_number,
             mode: Mode::StepEdit,
+            ..self.clone()
+        }
+    }
+
+    fn mute_sequence(&self, sequence_number: usize) -> Context {
+        let mut sequences = self.sequences.clone();
+        let muted_sequence = self.sequences[sequence_number].toggle_mute();
+        mem::replace(&mut sequences[sequence_number], muted_sequence);
+
+        Context {
+            sequences: sequences,
             ..self.clone()
         }
     }
@@ -113,10 +125,7 @@ impl Context {
                 Message::ShiftOff => self.set_shift(false),
                 Message::NoteOn { note_number: n } => match self.shift {
                     false => self.select_sequence(note_number_to_sequence(*n)),
-                    true => {
-                        let new_sequencer = self.step_sequencer.toggle_mute(*n);
-                        self.set_step_sequencer(new_sequencer)
-                    }
+                    true => self.mute_sequence(note_number_to_sequence(*n)),
                 },
                 Message::KnobIncrement { number: 1 } => Context {
                     bpm: (self.bpm + 1.0).min(240.0),
@@ -136,8 +145,8 @@ fn note_number_to_sixteenth(note_number: i32) -> i32 {
     note_number - 35
 }
 
-fn note_number_to_sequence(note_number: i32) -> i32 {
-    note_number - 35
+fn note_number_to_sequence(note_number: i32) -> usize {
+    (note_number - 35) as usize
 }
 
 #[test]
@@ -178,6 +187,17 @@ fn test_process_note_on_message_to_select_sequence() {
     let processed_context = context.process_messages(messages);
 
     assert_eq!(8, processed_context.selected_sequence);
+}
+
+#[test]
+fn test_process_note_on_message_to_mute_sequence() {
+    let context = Context::default().set_mode(Mode::Step);
+    let messages = vec![Message::ShiftOn, Message::NoteOn { note_number: 43 }];
+    let processed_context = context.process_messages(messages);
+
+    let muted_sequence = &processed_context.sequences[8];
+
+    assert_eq!(true, muted_sequence.is_muted());
 }
 
 #[test]

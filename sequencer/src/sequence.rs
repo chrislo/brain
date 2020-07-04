@@ -169,6 +169,10 @@ impl Sequence {
             ..self.clone()
         }
     }
+
+    pub fn is_muted(&self) -> bool {
+        self.mute
+    }
 }
 
 #[test]
