@@ -7,6 +7,7 @@ use crate::step_sequencer::StepSequencer;
 pub struct Context {
     pub step_sequencer: StepSequencer,
     pub sequences: Vec<Sequence>,
+    pub selected_sequence: i32,
     pub bpm: f32,
     pub mode: Mode,
     pub tick: i32,
@@ -24,6 +25,7 @@ impl Context {
         Context {
             step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
             sequences: vec![Sequence::empty(); 16],
+            selected_sequence: 1,
             bpm: 120.0,
             mode: Mode::Step,
             tick: 0,
@@ -65,11 +67,9 @@ impl Context {
         events
     }
 
-    fn edit_step(&self, note_number: i32) -> Context {
-        let new_step_sequencer = self.step_sequencer.set_active_note_number(note_number);
-
+    fn select_sequence(&self, sequence_number: i32) -> Context {
         Context {
-            step_sequencer: new_step_sequencer,
+            selected_sequence: sequence_number,
             mode: Mode::StepEdit,
             ..self.clone()
         }
@@ -112,7 +112,7 @@ impl Context {
                 Message::ShiftOn => self.set_shift(true),
                 Message::ShiftOff => self.set_shift(false),
                 Message::NoteOn { note_number: n } => match self.shift {
-                    false => self.edit_step(*n),
+                    false => self.select_sequence(note_number_to_sequence(*n)),
                     true => {
                         let new_sequencer = self.step_sequencer.toggle_mute(*n);
                         self.set_step_sequencer(new_sequencer)
@@ -133,6 +133,10 @@ impl Context {
 }
 
 fn note_number_to_sixteenth(note_number: i32) -> i32 {
+    note_number - 35
+}
+
+fn note_number_to_sequence(note_number: i32) -> i32 {
     note_number - 35
 }
 
@@ -165,6 +169,15 @@ fn test_process_note_on_message() {
 
     let active_sixteenths = processed_context.step_sequencer.active_sixteenths();
     assert_eq!(1, active_sixteenths.len());
+}
+
+#[test]
+fn test_process_note_on_message_to_select_sequence() {
+    let context = Context::default().set_mode(Mode::Step);
+    let messages = vec![Message::NoteOn { note_number: 43 }];
+    let processed_context = context.process_messages(messages);
+
+    assert_eq!(8, processed_context.selected_sequence);
 }
 
 #[test]
