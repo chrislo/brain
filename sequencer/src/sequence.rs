@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone, Hash, Eq)]
 pub struct Trigger {
-    note_number: i32,
+    pub note_number: i32,
     offset: i32,
 }
 

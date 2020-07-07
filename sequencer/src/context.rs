@@ -90,8 +90,8 @@ impl Context {
 
     fn toggle_step_for_selected_sequence(&self, step_number: i32) -> Context {
         let mut sequences = self.sequences.clone();
-        let new_sequence =
-            self.sequences[self.selected_sequence].toggle_note_number_at_step(1, Step(step_number));
+        let new_sequence = self.sequences[self.selected_sequence]
+            .toggle_note_number_at_step(self.selected_sequence as i32, Step(step_number));
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
 
         Context {
@@ -179,12 +179,13 @@ fn test_advance_tick() {
 
 #[test]
 fn test_process_note_on_message_to_toggle_step() {
-    let context = Context::default().select_sequence(1);
-    let messages = vec![Message::NoteOn { note_number: 43 }];
+    let context = Context::default().select_sequence(3);
+    let messages = vec![Message::NoteOn { note_number: 36 }];
     let processed_context = context.process_messages(messages);
-    let sequence = &processed_context.sequences[1];
+    let sequence = &processed_context.sequences[3];
 
     assert_eq!(1, sequence.active_steps().len());
+    assert_eq!(3, sequence.triggers_for_tick(0)[0].note_number)
 }
 
 #[test]
