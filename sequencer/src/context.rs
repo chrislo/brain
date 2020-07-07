@@ -183,7 +183,7 @@ fn test_process_note_on_message_to_toggle_step() {
     let messages = vec![Message::NoteOn { note_number: 43 }];
     let processed_context = context.process_messages(messages);
     let sequence = &processed_context.sequences[1];
-    println!("{:?}", processed_context);
+
     assert_eq!(1, sequence.active_steps().len());
 }
 
