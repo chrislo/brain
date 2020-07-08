@@ -24,9 +24,14 @@ pub enum Mode {
 
 impl Context {
     pub fn default() -> Context {
+        let mut sequences = vec![];
+        for n in 36..=51 {
+            sequences.push(Sequence::with_root_note(n));
+        }
+
         Context {
             step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
-            sequences: vec![Sequence::empty(); 16],
+            sequences: sequences,
             selected_sequence: 1,
             bpm: 120.0,
             mode: Mode::Step,
@@ -90,8 +95,7 @@ impl Context {
 
     fn toggle_step_for_selected_sequence(&self, step_number: i32) -> Context {
         let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence]
-            .toggle_note_number_at_step(self.selected_sequence as i32, Step(step_number));
+        let new_sequence = self.sequences[self.selected_sequence].toggle_step(Step(step_number));
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
 
         Context {
@@ -179,13 +183,14 @@ fn test_advance_tick() {
 
 #[test]
 fn test_process_note_on_message_to_toggle_step() {
+    // Sequence 3 corresponds to pad 4, mapped to MIDI note 39 by default
     let context = Context::default().select_sequence(3);
     let messages = vec![Message::NoteOn { note_number: 36 }];
     let processed_context = context.process_messages(messages);
     let sequence = &processed_context.sequences[3];
 
     assert_eq!(1, sequence.active_steps().len());
-    assert_eq!(3, sequence.triggers_for_tick(0)[0].note_number)
+    assert_eq!(39, sequence.triggers_for_tick(0)[0].note_number)
 }
 
 #[test]

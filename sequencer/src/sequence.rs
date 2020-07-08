@@ -27,6 +27,7 @@ pub struct Sequence {
     triggers: HashMap<Step, HashSet<Trigger>>,
     number_of_steps: i32,
     mute: bool,
+    root_note: i32,
 }
 
 impl Sequence {
@@ -41,6 +42,14 @@ impl Sequence {
             triggers: triggers,
             number_of_steps: 16,
             mute: false,
+            root_note: 1,
+        }
+    }
+
+    pub fn with_root_note(root_note: i32) -> Sequence {
+        Sequence {
+            root_note: root_note,
+            ..Sequence::empty()
         }
     }
 
@@ -64,7 +73,7 @@ impl Sequence {
         }
     }
 
-    pub fn trigger_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
+    fn trigger_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
         let new_trigger = Trigger {
             note_number: note_number,
             offset: 0,
@@ -90,11 +99,15 @@ impl Sequence {
         }
     }
 
-    pub fn toggle_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
+    fn toggle_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
         match self.has_note_number_at_step(note_number, step) {
             true => self.remove_note_number_at_step(note_number, step),
             false => self.trigger_note_number_at_step(note_number, step),
         }
+    }
+
+    pub fn toggle_step(&self, step: Step) -> Sequence {
+        self.toggle_note_number_at_step(self.root_note, step)
     }
 
     fn has_note_number_at_step(&self, note_number: i32, step: Step) -> bool {
@@ -372,21 +385,22 @@ fn test_toggle_mute() {
 }
 
 #[test]
-fn test_toggle_note_number_at_step() {
-    let sequence = Sequence::empty();
+fn test_toggle_step() {
+    let sequence = Sequence::with_root_note(37);
 
+    assert_eq!(1, sequence.toggle_step(Step(1)).active_steps().len());
     assert_eq!(
-        1,
-        sequence
-            .toggle_note_number_at_step(1, Step(1))
-            .active_steps()
-            .len()
+        Trigger {
+            note_number: 37,
+            offset: 0
+        },
+        sequence.toggle_step(Step(1)).triggers_for_tick(0)[0]
     );
     assert_eq!(
         0,
         sequence
-            .toggle_note_number_at_step(1, Step(1))
-            .toggle_note_number_at_step(1, Step(1))
+            .toggle_step(Step(1))
+            .toggle_step(Step(1))
             .active_steps()
             .len()
     );
