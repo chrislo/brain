@@ -113,10 +113,10 @@ fn current_pad(context: &Context) -> Option<Pad> {
 fn active_pads(context: &Context) -> HashSet<Pad> {
     match context.mode {
         Mode::StepEdit => context
-            .step_sequencer
-            .active_sixteenths()
+            .selected_sequence()
+            .active_steps()
             .iter()
-            .map(|s| Pad::new(*s))
+            .map(|s| Pad::new(s.0))
             .collect(),
         Mode::Step => context
             .step_sequencer
@@ -148,11 +148,9 @@ use crate::step_sequencer::StepSequencer;
 
 #[test]
 fn test_active_pads_step_sequencer() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty().toggle_sixteenth(2),
-        mode: Mode::StepEdit,
-        ..Context::default()
-    };
+    let context = Context::default()
+        .select_sequence(1)
+        .toggle_step_for_selected_sequence(2);
 
     assert_eq!(1, active_pads(&context).len());
     assert!(active_pads(&context).contains(&Pad::new(2)));

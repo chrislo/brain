@@ -74,12 +74,16 @@ impl Context {
             .collect()
     }
 
-    fn select_sequence(&self, sequence_number: usize) -> Context {
+    pub fn select_sequence(&self, sequence_number: usize) -> Context {
         Context {
             selected_sequence: sequence_number,
             mode: Mode::StepEdit,
             ..self.clone()
         }
+    }
+
+    pub fn selected_sequence(&self) -> &Sequence {
+        &self.sequences[self.selected_sequence]
     }
 
     fn mute_sequence(&self, sequence_number: usize) -> Context {
@@ -93,7 +97,7 @@ impl Context {
         }
     }
 
-    fn toggle_step_for_selected_sequence(&self, step_number: i32) -> Context {
+    pub fn toggle_step_for_selected_sequence(&self, step_number: i32) -> Context {
         let mut sequences = self.sequences.clone();
         let new_sequence = self.sequences[self.selected_sequence].toggle_step(Step(step_number));
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
