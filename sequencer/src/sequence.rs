@@ -1,3 +1,4 @@
+use crate::event::Event;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -71,6 +72,15 @@ impl Sequence {
                 .collect(),
             true => vec![],
         }
+    }
+
+    pub fn events_for_tick(&self, tick: i32) -> Vec<Event> {
+        self.triggers_for_tick(tick)
+            .iter()
+            .map(|t| Event {
+                note_number: t.note_number,
+            })
+            .collect()
     }
 
     fn trigger_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
@@ -390,11 +400,8 @@ fn test_toggle_step() {
 
     assert_eq!(1, sequence.toggle_step(Step(1)).active_steps().len());
     assert_eq!(
-        Trigger {
-            note_number: 37,
-            offset: 0
-        },
-        sequence.toggle_step(Step(1)).triggers_for_tick(0)[0]
+        Event { note_number: 37 },
+        sequence.toggle_step(Step(1)).events_for_tick(0)[0]
     );
     assert_eq!(
         0,
