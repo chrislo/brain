@@ -108,8 +108,7 @@ impl Context {
         }
     }
 
-    #[allow(dead_code)]
-    fn set_mode(&self, mode: Mode) -> Context {
+    pub fn set_mode(&self, mode: Mode) -> Context {
         Context {
             mode: mode,
             ..self.clone()

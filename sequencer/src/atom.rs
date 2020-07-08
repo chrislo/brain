@@ -20,8 +20,8 @@ impl Pad {
         Pad { number: number }
     }
 
-    pub fn from_midi_note_number(note_number: i32) -> Pad {
-        Pad::new(note_number - 35)
+    pub fn from_sequence_number(sequence_number: usize) -> Pad {
+        Pad::new(sequence_number as i32 + 1)
     }
 
     pub fn note_number(&self) -> i32 {
@@ -118,13 +118,23 @@ fn active_pads(context: &Context) -> HashSet<Pad> {
             .iter()
             .map(|s| Pad::new(s.0))
             .collect(),
-        Mode::Step => context
-            .step_sequencer
-            .active_notes(context.tick)
+        Mode::Step => active_sequences(context)
             .iter()
-            .map(|n| Pad::from_midi_note_number(*n))
+            .map(|i| Pad::from_sequence_number(*i))
             .collect(),
     }
+}
+
+fn active_sequences(context: &Context) -> HashSet<usize> {
+    let mut active_sequences = HashSet::new();
+
+    for (idx, sequence) in context.sequences.iter().enumerate() {
+        if !sequence.events_for_tick(context.tick).is_empty() {
+            active_sequences.insert(idx);
+        }
+    }
+
+    active_sequences
 }
 
 fn turn_all_lights_off() {
@@ -143,9 +153,6 @@ fn test_message_to_addr() {
     assert_eq!("/atom/note_on", message_to_addr("note_on".to_string()));
 }
 
-#[cfg(test)]
-use crate::step_sequencer::StepSequencer;
-
 #[test]
 fn test_active_pads_step_sequencer() {
     let context = Context::default()
@@ -158,16 +165,27 @@ fn test_active_pads_step_sequencer() {
 
 #[test]
 fn test_active_pads_step_mode() {
-    let context = Context {
-        step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
-        mode: Mode::Step,
-        ..Context::default()
-    };
+    let context = Context::default()
+        .select_sequence(0)
+        .toggle_step_for_selected_sequence(1)
+        .set_mode(Mode::Step);
 
-    // the first sixteenth is active, so in Step mode pad 1 should
-    // flash on tick 0
+    // the first step of the first sequence is active so for tick 0
+    // (the Context::default tick) active_pads should contain Pad 1
     assert_eq!(1, active_pads(&context).len());
     assert!(active_pads(&context).contains(&Pad::new(1)));
+}
+
+#[test]
+fn test_active_sequences() {
+    let context = Context::default()
+        .select_sequence(0)
+        .toggle_step_for_selected_sequence(1);
+
+    // the first step of the first sequence is active so for tick 0
+    // (the Context::default tick) active_sequences should contain 0
+    assert_eq!(1, active_sequences(&context).len());
+    assert!(active_sequences(&context).contains(&0));
 }
 
 #[test]
@@ -188,10 +206,4 @@ fn test_turn_light_off_message() {
     assert_eq!(rosc::OscType::Int(1), message.args[0]);
     assert_eq!(rosc::OscType::Int(36), message.args[1]);
     assert_eq!(rosc::OscType::Int(0), message.args[2]);
-}
-
-#[test]
-fn test_from_midi_note_number() {
-    let pad = Pad::from_midi_note_number(36);
-    assert_eq!(1, pad.number);
 }
