@@ -2,12 +2,10 @@ use crate::event::Event;
 use crate::input::Message;
 use crate::sequence::Sequence;
 use crate::sequence::Step;
-use crate::step_sequencer::StepSequencer;
 use std::mem;
 
 #[derive(Debug, Clone)]
 pub struct Context {
-    pub step_sequencer: StepSequencer,
     pub sequences: Vec<Sequence>,
     pub selected_sequence: usize,
     pub bpm: f32,
@@ -30,7 +28,6 @@ impl Context {
         }
 
         Context {
-            step_sequencer: StepSequencer::empty().toggle_sixteenth(1),
             sequences: sequences,
             selected_sequence: 1,
             bpm: 120.0,

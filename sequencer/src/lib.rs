@@ -5,4 +5,3 @@ pub mod event;
 pub mod input;
 pub mod output;
 pub mod sequence;
-pub mod step_sequencer;
