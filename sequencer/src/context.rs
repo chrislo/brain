@@ -68,10 +68,10 @@ impl Context {
     }
 
     fn events_for_tick(&self, tick_number: i32) -> Vec<Event> {
-        let mut events = vec![];
-        let mut step_sequencer_events = self.step_sequencer.events_for_tick(tick_number);
-        events.append(&mut step_sequencer_events);
-        events
+        self.sequences
+            .iter()
+            .flat_map(|s| s.events_for_tick(tick_number))
+            .collect()
     }
 
     fn select_sequence(&self, sequence_number: usize) -> Context {
@@ -100,14 +100,6 @@ impl Context {
 
         Context {
             sequences: sequences,
-            ..self.clone()
-        }
-    }
-
-    #[allow(dead_code)]
-    fn set_step_sequencer(&self, step_sequencer: StepSequencer) -> Context {
-        Context {
-            step_sequencer: step_sequencer,
             ..self.clone()
         }
     }
@@ -165,16 +157,6 @@ fn note_number_to_sequence(note_number: i32) -> usize {
 }
 
 #[test]
-fn test_events() {
-    let step_sequencer = StepSequencer::empty().toggle_sixteenth(2);
-    let context = Context::default().set_step_sequencer(step_sequencer);
-
-    let events = context.events_for_tick(6);
-    assert_eq!(1, events.len());
-    assert_eq!(36, events[0].note_number);
-}
-
-#[test]
 fn test_advance_tick() {
     let context = Context::default();
     assert_eq!(0, context.tick);
@@ -186,11 +168,10 @@ fn test_process_note_on_message_to_toggle_step() {
     // Sequence 3 corresponds to pad 4, mapped to MIDI note 39 by default
     let context = Context::default().select_sequence(3);
     let messages = vec![Message::NoteOn { note_number: 36 }];
-    let processed_context = context.process_messages(messages);
-    let sequence = &processed_context.sequences[3];
 
-    assert_eq!(1, sequence.active_steps().len());
-    assert_eq!(39, sequence.triggers_for_tick(0)[0].note_number)
+    let processed_context = context.process_messages(messages);
+
+    assert_eq!(39, processed_context.events_for_tick(0)[0].note_number)
 }
 
 #[test]
