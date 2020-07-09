@@ -16,7 +16,7 @@ pub struct Context {
 
 #[derive(Debug, Copy, Clone)]
 pub enum Mode {
-    StepEdit,
+    SequenceEdit,
     Step,
 }
 
@@ -74,7 +74,7 @@ impl Context {
     pub fn select_sequence(&self, sequence_number: usize) -> Context {
         Context {
             selected_sequence: sequence_number,
-            mode: Mode::StepEdit,
+            mode: Mode::SequenceEdit,
             ..self.clone()
         }
     }
@@ -121,7 +121,7 @@ impl Context {
 
     fn process_message(&self, message: &Message) -> Context {
         match self.mode {
-            Mode::StepEdit => match message {
+            Mode::SequenceEdit => match message {
                 Message::NoteOn { note_number: n } => {
                     self.toggle_step_for_selected_sequence(note_number_to_sixteenth(*n))
                 }

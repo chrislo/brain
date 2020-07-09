@@ -102,7 +102,7 @@ pub fn update(current_context: &Context, next_context: &Context) -> Vec<OscMessa
 
 fn current_pad(context: &Context) -> Option<Pad> {
     match context.mode {
-        Mode::StepEdit => {
+        Mode::SequenceEdit => {
             let current_step = context.selected_sequence().current_step(context.tick);
             Some(Pad::new(current_step.0))
         }
@@ -112,7 +112,7 @@ fn current_pad(context: &Context) -> Option<Pad> {
 
 fn active_pads(context: &Context) -> HashSet<Pad> {
     match context.mode {
-        Mode::StepEdit => context
+        Mode::SequenceEdit => context
             .selected_sequence()
             .active_steps()
             .iter()
