@@ -125,6 +125,7 @@ impl Context {
                 Message::NoteOn { note_number: n } => {
                     self.toggle_step_for_selected_sequence(note_number_to_sixteenth(*n))
                 }
+                Message::Select => self.set_mode(Mode::Step),
                 _ => self.clone(),
             },
             Mode::Step => match message {
