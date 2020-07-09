@@ -118,7 +118,7 @@ fn active_pads(context: &Context) -> HashSet<Pad> {
             .iter()
             .map(|s| Pad::new(s.0))
             .collect(),
-        Mode::Step => active_sequences(context)
+        Mode::Performance => active_sequences(context)
             .iter()
             .map(|i| Pad::from_sequence_number(*i))
             .collect(),
@@ -168,7 +168,7 @@ fn test_active_pads_step_mode() {
     let context = Context::default()
         .select_sequence(0)
         .toggle_step_for_selected_sequence(1)
-        .set_mode(Mode::Step);
+        .set_mode(Mode::Performance);
 
     // the first step of the first sequence is active so for tick 0
     // (the Context::default tick) active_pads should contain Pad 1

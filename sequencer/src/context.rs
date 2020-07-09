@@ -17,7 +17,7 @@ pub struct Context {
 #[derive(Debug, Copy, Clone)]
 pub enum Mode {
     SequenceEdit,
-    Step,
+    Performance,
 }
 
 impl Context {
@@ -31,7 +31,7 @@ impl Context {
             sequences: sequences,
             selected_sequence: 0,
             bpm: 120.0,
-            mode: Mode::Step,
+            mode: Mode::Performance,
             tick: 0,
             shift: false,
         }
@@ -125,10 +125,10 @@ impl Context {
                 Message::NoteOn { note_number: n } => {
                     self.toggle_step_for_selected_sequence(note_number_to_sixteenth(*n))
                 }
-                Message::Select => self.set_mode(Mode::Step),
+                Message::Select => self.set_mode(Mode::Performance),
                 _ => self.clone(),
             },
-            Mode::Step => match message {
+            Mode::Performance => match message {
                 Message::ShiftOn => self.set_shift(true),
                 Message::ShiftOff => self.set_shift(false),
                 Message::NoteOn { note_number: n } => match self.shift {
@@ -177,7 +177,7 @@ fn test_process_note_on_message_to_toggle_step() {
 
 #[test]
 fn test_process_note_on_message_to_select_sequence() {
-    let context = Context::default().set_mode(Mode::Step);
+    let context = Context::default().set_mode(Mode::Performance);
     let messages = vec![Message::NoteOn { note_number: 43 }];
     let processed_context = context.process_messages(messages);
 
@@ -186,7 +186,7 @@ fn test_process_note_on_message_to_select_sequence() {
 
 #[test]
 fn test_process_note_on_message_to_mute_sequence() {
-    let context = Context::default().set_mode(Mode::Step);
+    let context = Context::default().set_mode(Mode::Performance);
     let messages = vec![Message::ShiftOn, Message::NoteOn { note_number: 43 }];
     let processed_context = context.process_messages(messages);
 
@@ -197,7 +197,7 @@ fn test_process_note_on_message_to_mute_sequence() {
 
 #[test]
 fn test_process_knob_1_bpm_set_message() {
-    let context = Context::default().set_mode(Mode::Step);
+    let context = Context::default().set_mode(Mode::Performance);
 
     let processed_context = context.process_messages(vec![Message::KnobIncrement { number: 1 }]);
     assert_eq!(121.0, processed_context.bpm);
