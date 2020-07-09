@@ -105,6 +105,49 @@ impl Context {
         }
     }
 
+    pub fn increment_length_for_selected_sequence(&self) -> Context {
+        let mut sequences = self.sequences.clone();
+        let new_sequence = self.sequences[self.selected_sequence].increment_length();
+        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+
+        Context {
+            sequences: sequences,
+            ..self.clone()
+        }
+    }
+
+    pub fn decrement_length_for_selected_sequence(&self) -> Context {
+        let mut sequences = self.sequences.clone();
+        let new_sequence = self.sequences[self.selected_sequence].decrement_length();
+        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+
+        Context {
+            sequences: sequences,
+            ..self.clone()
+        }
+    }
+
+    pub fn increment_euclidean_fill_for_selected_sequence(&self) -> Context {
+        let mut sequences = self.sequences.clone();
+        let new_sequence = self.sequences[self.selected_sequence].increment_euclidean_fill();
+        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+
+        Context {
+            sequences: sequences,
+            ..self.clone()
+        }
+    }
+
+    pub fn decrement_euclidean_fill_for_selected_sequence(&self) -> Context {
+        let mut sequences = self.sequences.clone();
+        let new_sequence = self.sequences[self.selected_sequence].decrement_euclidean_fill();
+        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+
+        Context {
+            sequences: sequences,
+            ..self.clone()
+        }
+    }
     pub fn set_mode(&self, mode: Mode) -> Context {
         Context {
             mode: mode,
@@ -124,6 +167,18 @@ impl Context {
             Mode::SequenceEdit => match message {
                 Message::NoteOn { note_number: n } => {
                     self.toggle_step_for_selected_sequence(note_number_to_sixteenth(*n))
+                }
+                Message::KnobIncrement { number: 1 } => {
+                    self.increment_length_for_selected_sequence()
+                }
+                Message::KnobDecrement { number: 1 } => {
+                    self.decrement_length_for_selected_sequence()
+                }
+                Message::KnobIncrement { number: 2 } => {
+                    self.increment_euclidean_fill_for_selected_sequence()
+                }
+                Message::KnobDecrement { number: 2 } => {
+                    self.decrement_euclidean_fill_for_selected_sequence()
                 }
                 Message::Select => self.set_mode(Mode::Performance),
                 _ => self.clone(),

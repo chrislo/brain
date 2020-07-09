@@ -171,6 +171,42 @@ impl Sequence {
         active_steps
     }
 
+    pub fn increment_length(&self) -> Sequence {
+        if self.number_of_steps < 16 {
+            self.set_length(self.number_of_steps + 1)
+        } else {
+            self.set_length(16)
+        }
+    }
+
+    pub fn decrement_length(&self) -> Sequence {
+        if self.number_of_steps > 0 {
+            self.set_length(self.number_of_steps - 1)
+        } else {
+            self.set_length(0)
+        }
+    }
+
+    pub fn increment_euclidean_fill(&self) -> Sequence {
+        let active_steps = self.active_steps().len() as i32;
+
+        if active_steps < self.number_of_steps {
+            self.euclidean_fill(self.root_note, active_steps + 1)
+        } else {
+            self.euclidean_fill(self.root_note, self.number_of_steps)
+        }
+    }
+
+    pub fn decrement_euclidean_fill(&self) -> Sequence {
+        let active_steps = self.active_steps().len() as i32;
+
+        if active_steps > 0 {
+            self.euclidean_fill(self.root_note, active_steps - 1)
+        } else {
+            self.euclidean_fill(self.root_note, 0)
+        }
+    }
+
     pub fn set_length(&self, number_of_steps: i32) -> Sequence {
         let mut triggers = HashMap::new();
 
@@ -196,7 +232,8 @@ impl Sequence {
     pub fn euclidean_fill(&self, note_number: i32, onsets: i32) -> Sequence {
         let slope = onsets as f32 / self.number_of_steps as f32;
         let mut previous = 1;
-        let mut sequence = Sequence::empty().set_length(self.number_of_steps);
+        let mut sequence =
+            Sequence::with_root_note(self.root_note).set_length(self.number_of_steps);
 
         if onsets > 0 {
             for i in 0..self.number_of_steps {
