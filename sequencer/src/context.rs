@@ -29,7 +29,7 @@ impl Context {
 
         Context {
             sequences: sequences,
-            selected_sequence: 1,
+            selected_sequence: 0,
             bpm: 120.0,
             mode: Mode::Step,
             tick: 0,
@@ -154,7 +154,7 @@ fn note_number_to_sixteenth(note_number: i32) -> i32 {
 }
 
 fn note_number_to_sequence(note_number: i32) -> usize {
-    (note_number - 35) as usize
+    (note_number - 36) as usize
 }
 
 #[test]
@@ -181,7 +181,7 @@ fn test_process_note_on_message_to_select_sequence() {
     let messages = vec![Message::NoteOn { note_number: 43 }];
     let processed_context = context.process_messages(messages);
 
-    assert_eq!(8, processed_context.selected_sequence);
+    assert_eq!(7, processed_context.selected_sequence);
 }
 
 #[test]
@@ -190,7 +190,7 @@ fn test_process_note_on_message_to_mute_sequence() {
     let messages = vec![Message::ShiftOn, Message::NoteOn { note_number: 43 }];
     let processed_context = context.process_messages(messages);
 
-    let muted_sequence = &processed_context.sequences[8];
+    let muted_sequence = &processed_context.sequences[7];
 
     assert_eq!(true, muted_sequence.is_muted());
 }
