@@ -171,6 +171,28 @@ impl Context {
         }
     }
 
+    pub fn increment_transpose_for_selected_sequence(&self) -> Context {
+        let mut sequences = self.sequences.clone();
+        let new_sequence = self.sequences[self.selected_sequence].increment_transpose();
+        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+
+        Context {
+            sequences: sequences,
+            ..self.clone()
+        }
+    }
+
+    pub fn decrement_transpose_for_selected_sequence(&self) -> Context {
+        let mut sequences = self.sequences.clone();
+        let new_sequence = self.sequences[self.selected_sequence].decrement_transpose();
+        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+
+        Context {
+            sequences: sequences,
+            ..self.clone()
+        }
+    }
+
     pub fn set_mode(&self, mode: Mode) -> Context {
         Context {
             mode: mode,
@@ -210,6 +232,8 @@ impl Context {
                     self.decrement_rotate_for_selected_sequence()
                 }
                 Message::Select => self.set_mode(Mode::Performance),
+                Message::Up => self.increment_transpose_for_selected_sequence(),
+                Message::Down => self.decrement_transpose_for_selected_sequence(),
                 _ => self.clone(),
             },
             Mode::Performance => match message {
