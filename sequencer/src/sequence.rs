@@ -251,7 +251,7 @@ impl Sequence {
         let mut triggers = HashMap::new();
 
         for (s, t) in self.triggers.iter() {
-            let new_step_number = (s.0 - 1 + rotation).rem_euclid(3) + 1;
+            let new_step_number = (s.0 - 1 + rotation).rem_euclid(self.number_of_steps) + 1;
             triggers.insert(Step(new_step_number), t.clone());
         }
 
