@@ -119,28 +119,6 @@ impl Context {
         }
     }
 
-    pub fn increment_rotate_for_selected_sequence(&self) -> Context {
-        let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].increment_rotate();
-        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
-
-        Context {
-            sequences: sequences,
-            ..self.clone()
-        }
-    }
-
-    pub fn decrement_rotate_for_selected_sequence(&self) -> Context {
-        let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].decrement_rotate();
-        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
-
-        Context {
-            sequences: sequences,
-            ..self.clone()
-        }
-    }
-
     pub fn set_mode(&self, mode: Mode) -> Context {
         Context {
             mode: mode,
@@ -174,10 +152,10 @@ impl Context {
                     self.change_selected_sequence(Sequence::decrement_euclidean_fill)
                 }
                 Message::KnobIncrement { number: 3 } => {
-                    self.increment_rotate_for_selected_sequence()
+                    self.change_selected_sequence(Sequence::increment_rotate)
                 }
                 Message::KnobDecrement { number: 3 } => {
-                    self.decrement_rotate_for_selected_sequence()
+                    self.change_selected_sequence(Sequence::decrement_rotate)
                 }
                 Message::Select => self.set_mode(Mode::Performance),
                 _ => self.clone(),
