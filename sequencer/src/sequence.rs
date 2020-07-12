@@ -1,5 +1,4 @@
 use crate::event::Event;
-use std::cmp;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -30,7 +29,6 @@ pub struct Sequence {
     number_of_steps: i32,
     mute: bool,
     root_note: i32,
-    transpose: i32,
 }
 
 impl Sequence {
@@ -46,7 +44,6 @@ impl Sequence {
             number_of_steps: 16,
             mute: false,
             root_note: 1,
-            transpose: 0,
         }
     }
 
@@ -81,7 +78,7 @@ impl Sequence {
         self.triggers_for_tick(tick)
             .iter()
             .map(|t| Event {
-                note_number: t.note_number + self.transpose,
+                note_number: t.note_number,
             })
             .collect()
     }
@@ -274,21 +271,6 @@ impl Sequence {
     pub fn is_muted(&self) -> bool {
         self.mute
     }
-
-    pub fn set_transpose(&self, transpose: i32) -> Sequence {
-        Sequence {
-            transpose: transpose,
-            ..self.clone()
-        }
-    }
-
-    pub fn increment_transpose(&self) -> Sequence {
-        self.set_transpose(self.transpose + 1)
-    }
-
-    pub fn decrement_transpose(&self) -> Sequence {
-        self.set_transpose(cmp::max(self.transpose - 1, 0))
-    }
 }
 
 #[test]
@@ -325,16 +307,6 @@ fn test_adding_the_same_trigger_twice_to_sequence() {
 
     let triggers = sequence.triggers_for_tick(0);
     assert_eq!(1, triggers.len());
-}
-
-#[test]
-fn test_transpose() {
-    let sequence = Sequence::empty()
-        .trigger_note_number_at_step(1, Step(1))
-        .set_transpose(1);
-
-    let event = &sequence.events_for_tick(0)[0];
-    assert_eq!(2, event.note_number);
 }
 
 #[test]

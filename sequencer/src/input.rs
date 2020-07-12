@@ -11,7 +11,6 @@ pub enum Message {
     Right,
     Select,
     Up,
-    Down,
     ShiftOn,
     ShiftOff,
     Unhandled,
@@ -58,8 +57,6 @@ fn parse_incoming_osc_message(packet: OscPacket) -> Message {
                             Message::Right
                         } else if *c == 87 && *v == 127 {
                             Message::Up
-                        } else if *c == 89 && *v == 127 {
-                            Message::Down
                         } else if *c == 103 && *v == 127 {
                             Message::Select
                         } else if *c == 32 && *v == 127 {
@@ -145,16 +142,6 @@ fn test_parse_incoming_up_message() {
     });
     let msg = parse_incoming_osc_message(packet);
     assert!(matches!(msg, Message::Up));
-}
-
-#[test]
-fn test_parse_incoming_down_message() {
-    let packet = OscPacket::Message(OscMessage {
-        addr: "/midi/atom/1/1/control_change".to_string(),
-        args: vec![rosc::OscType::Int(89), rosc::OscType::Int(127)],
-    });
-    let msg = parse_incoming_osc_message(packet);
-    assert!(matches!(msg, Message::Down));
 }
 
 #[test]
