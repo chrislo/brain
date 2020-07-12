@@ -121,7 +121,7 @@ impl Context {
 
     pub fn increment_rotate_for_selected_sequence(&self) -> Context {
         let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].rotate(1);
+        let new_sequence = self.sequences[self.selected_sequence].increment_rotate();
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
 
         Context {
@@ -132,7 +132,7 @@ impl Context {
 
     pub fn decrement_rotate_for_selected_sequence(&self) -> Context {
         let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].rotate(-1);
+        let new_sequence = self.sequences[self.selected_sequence].decrement_rotate();
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
 
         Context {

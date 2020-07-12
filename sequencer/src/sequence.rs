@@ -261,6 +261,14 @@ impl Sequence {
         }
     }
 
+    pub fn increment_rotate(&self) -> Sequence {
+        self.rotate(1)
+    }
+
+    pub fn decrement_rotate(&self) -> Sequence {
+        self.rotate(-1)
+    }
+
     pub fn toggle_mute(&self) -> Sequence {
         Sequence {
             mute: !self.mute,
