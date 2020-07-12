@@ -105,42 +105,12 @@ impl Context {
         }
     }
 
-    pub fn increment_length_for_selected_sequence(&self) -> Context {
+    fn change_selected_sequence<F>(&self, f: F) -> Context
+    where
+        F: Fn(&Sequence) -> Sequence,
+    {
         let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].increment_length();
-        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
-
-        Context {
-            sequences: sequences,
-            ..self.clone()
-        }
-    }
-
-    pub fn decrement_length_for_selected_sequence(&self) -> Context {
-        let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].decrement_length();
-        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
-
-        Context {
-            sequences: sequences,
-            ..self.clone()
-        }
-    }
-
-    pub fn increment_euclidean_fill_for_selected_sequence(&self) -> Context {
-        let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].increment_euclidean_fill();
-        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
-
-        Context {
-            sequences: sequences,
-            ..self.clone()
-        }
-    }
-
-    pub fn decrement_euclidean_fill_for_selected_sequence(&self) -> Context {
-        let mut sequences = self.sequences.clone();
-        let new_sequence = self.sequences[self.selected_sequence].decrement_euclidean_fill();
+        let new_sequence = f(&self.sequences[self.selected_sequence]);
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
 
         Context {
@@ -192,16 +162,16 @@ impl Context {
                     self.toggle_step_for_selected_sequence(note_number_to_sixteenth(*n))
                 }
                 Message::KnobIncrement { number: 1 } => {
-                    self.increment_length_for_selected_sequence()
+                    self.change_selected_sequence(Sequence::increment_length)
                 }
                 Message::KnobDecrement { number: 1 } => {
-                    self.decrement_length_for_selected_sequence()
+                    self.change_selected_sequence(Sequence::decrement_length)
                 }
                 Message::KnobIncrement { number: 2 } => {
-                    self.increment_euclidean_fill_for_selected_sequence()
+                    self.change_selected_sequence(Sequence::increment_euclidean_fill)
                 }
                 Message::KnobDecrement { number: 2 } => {
-                    self.decrement_euclidean_fill_for_selected_sequence()
+                    self.change_selected_sequence(Sequence::decrement_euclidean_fill)
                 }
                 Message::KnobIncrement { number: 3 } => {
                     self.increment_rotate_for_selected_sequence()
