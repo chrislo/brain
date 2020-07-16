@@ -2,7 +2,6 @@ use crate::event::Event;
 use crate::input::Message;
 use crate::sequence::Sequence;
 use crate::sequence::Step;
-use std::mem;
 
 #[derive(Debug, Clone)]
 pub struct Context {
@@ -86,7 +85,7 @@ impl Context {
     fn mute_sequence(&self, sequence_number: usize) -> Context {
         let mut sequences = self.sequences.clone();
         let muted_sequence = self.sequences[sequence_number].toggle_mute();
-        mem::replace(&mut sequences[sequence_number], muted_sequence);
+        sequences[sequence_number] = muted_sequence;
 
         Context {
             sequences,
@@ -97,7 +96,7 @@ impl Context {
     pub fn toggle_step_for_selected_sequence(&self, step_number: i32) -> Context {
         let mut sequences = self.sequences.clone();
         let new_sequence = self.sequences[self.selected_sequence].toggle_step(Step(step_number));
-        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+        sequences[self.selected_sequence] = new_sequence;
 
         Context {
             sequences,
@@ -111,7 +110,7 @@ impl Context {
     {
         let mut sequences = self.sequences.clone();
         let new_sequence = f(&self.sequences[self.selected_sequence]);
-        mem::replace(&mut sequences[self.selected_sequence], new_sequence);
+        sequences[self.selected_sequence] = new_sequence;
 
         Context {
             sequences,
