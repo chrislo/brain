@@ -4,15 +4,9 @@ use crate::output;
 use rosc::OscMessage;
 use std::collections::HashSet;
 
-#[derive(Hash, Eq, Copy, Clone, Debug)]
+#[derive(Hash, PartialEq, Eq, Copy, Clone, Debug)]
 struct Pad {
     number: i32,
-}
-
-impl PartialEq for Pad {
-    fn eq(&self, other: &Self) -> bool {
-        self.number == other.number
-    }
 }
 
 impl Pad {

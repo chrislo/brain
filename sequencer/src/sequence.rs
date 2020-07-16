@@ -2,26 +2,14 @@ use crate::event::Event;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-#[derive(Debug, Clone, Hash, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Trigger {
     pub note_number: i32,
     offset: i32,
 }
 
-impl PartialEq for Trigger {
-    fn eq(&self, other: &Self) -> bool {
-        self.note_number == other.note_number && self.offset == other.offset
-    }
-}
-
-#[derive(Debug, Clone, Copy, Hash, Eq)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Step(pub i32);
-
-impl PartialEq for Step {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct Sequence {
