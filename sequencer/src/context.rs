@@ -40,7 +40,7 @@ impl Context {
         match messages.len() {
             0 => self.clone(),
             _ => {
-                let mut this_messages = messages.clone();
+                let mut this_messages = messages;
                 let first_message = this_messages.remove(0);
                 let mut new_context = self.process_message(&first_message);
 
