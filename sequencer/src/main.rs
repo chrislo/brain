@@ -63,7 +63,7 @@ fn main() {
 
 fn tick_duration(bpm: f32) -> Duration {
     let ms_per_beat = (60. / bpm) * 1000.;
-    let length_of_measure_in_beats = 4. / 96 as f32;
+    let length_of_measure_in_beats = 4. / 96_f32;
     let length_of_measure_in_ms = (length_of_measure_in_beats * ms_per_beat) as u64;
 
     Duration::from_millis(length_of_measure_in_ms)
