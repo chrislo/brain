@@ -121,16 +121,13 @@ impl Sequence {
     fn remove_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
         let mut triggers = self.triggers.clone();
 
-        match self.triggers.get(&step) {
-            Some(t) => {
-                let mut step_triggers = t.clone();
-                step_triggers.remove(&Trigger {
-                    note_number,
-                    offset: 0,
-                });
-                triggers.insert(step, step_triggers);
-            }
-            None => {}
+        if let Some(t) = self.triggers.get(&step) {
+            let mut step_triggers = t.clone();
+            step_triggers.remove(&Trigger {
+                note_number,
+                offset: 0,
+            });
+            triggers.insert(step, step_triggers);
         }
 
         Sequence {

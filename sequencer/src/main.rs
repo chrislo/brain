@@ -55,9 +55,8 @@ fn main() {
     let sock = UdpSocket::bind("127.0.0.1:57120").unwrap();
 
     loop {
-        match input::process_incoming_message(&sock) {
-            Some(msg) => s.send(msg).unwrap(),
-            None => {}
+        if let Some(msg) = input::process_incoming_message(&sock) {
+            s.send(msg).unwrap()
         }
     }
 }

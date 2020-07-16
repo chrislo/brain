@@ -65,20 +65,14 @@ pub fn handshake() {
 pub fn update(current_context: &Context, next_context: &Context) -> Vec<OscMessage> {
     let mut current_context_active_pads = active_pads(current_context);
 
-    match current_pad(current_context) {
-        Some(pad) => {
-            current_context_active_pads.insert(pad);
-        }
-        None => {}
+    if let Some(pad) = current_pad(current_context) {
+        current_context_active_pads.insert(pad);
     }
 
     let mut next_context_active_pads = active_pads(next_context);
 
-    match current_pad(next_context) {
-        Some(pad) => {
-            next_context_active_pads.insert(pad);
-        }
-        None => {}
+    if let Some(pad) = current_pad(next_context) {
+        next_context_active_pads.insert(pad);
     }
 
     let mut osc_messages = vec![];
