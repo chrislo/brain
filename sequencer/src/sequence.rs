@@ -40,7 +40,7 @@ impl Sequence {
         }
 
         Sequence {
-            triggers: triggers,
+            triggers,
             number_of_steps: 16,
             mute: false,
             root_note: 1,
@@ -49,7 +49,7 @@ impl Sequence {
 
     pub fn with_root_note(root_note: i32) -> Sequence {
         Sequence {
-            root_note: root_note,
+            root_note,
             ..Sequence::empty()
         }
     }
@@ -85,7 +85,7 @@ impl Sequence {
 
     fn trigger_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
         let new_trigger = Trigger {
-            note_number: note_number,
+            note_number,
             offset: 0,
         };
         let mut triggers = self.triggers.clone();
@@ -104,7 +104,7 @@ impl Sequence {
         }
 
         Sequence {
-            triggers: triggers,
+            triggers,
             ..self.clone()
         }
     }
@@ -123,7 +123,7 @@ impl Sequence {
     fn has_note_number_at_step(&self, note_number: i32, step: Step) -> bool {
         match self.triggers.get(&step) {
             Some(t) => t.contains(&Trigger {
-                note_number: note_number,
+                note_number,
                 offset: 0,
             }),
             None => false,
@@ -137,7 +137,7 @@ impl Sequence {
             Some(t) => {
                 let mut step_triggers = t.clone();
                 step_triggers.remove(&Trigger {
-                    note_number: note_number,
+                    note_number,
                     offset: 0,
                 });
                 triggers.insert(step, step_triggers);
@@ -146,7 +146,7 @@ impl Sequence {
         }
 
         Sequence {
-            triggers: triggers,
+            triggers,
             ..self.clone()
         }
     }
@@ -223,8 +223,8 @@ impl Sequence {
         }
 
         Sequence {
-            triggers: triggers,
-            number_of_steps: number_of_steps,
+            triggers,
+            number_of_steps,
             ..self.clone()
         }
     }
@@ -256,7 +256,7 @@ impl Sequence {
         }
 
         Sequence {
-            triggers: triggers,
+            triggers,
             ..self.clone()
         }
     }

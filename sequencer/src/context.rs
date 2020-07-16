@@ -28,7 +28,7 @@ impl Context {
         }
 
         Context {
-            sequences: sequences,
+            sequences,
             selected_sequence: 0,
             bpm: 120.0,
             mode: Mode::Performance,
@@ -89,7 +89,7 @@ impl Context {
         mem::replace(&mut sequences[sequence_number], muted_sequence);
 
         Context {
-            sequences: sequences,
+            sequences,
             ..self.clone()
         }
     }
@@ -100,7 +100,7 @@ impl Context {
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
 
         Context {
-            sequences: sequences,
+            sequences,
             ..self.clone()
         }
     }
@@ -114,14 +114,14 @@ impl Context {
         mem::replace(&mut sequences[self.selected_sequence], new_sequence);
 
         Context {
-            sequences: sequences,
+            sequences,
             ..self.clone()
         }
     }
 
     pub fn set_mode(&self, mode: Mode) -> Context {
         Context {
-            mode: mode,
+            mode,
             ..self.clone()
         }
     }

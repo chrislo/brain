@@ -17,7 +17,7 @@ impl PartialEq for Pad {
 
 impl Pad {
     pub fn new(number: i32) -> Pad {
-        Pad { number: number }
+        Pad { number }
     }
 
     pub fn from_sequence_number(sequence_number: usize) -> Pad {
