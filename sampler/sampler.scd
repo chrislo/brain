@@ -1,7 +1,11 @@
 s.waitForBoot({
   ~dict = Dictionary.new(n: 16);
 
-  ~samplesDir = thisProcess.nowExecutingPath.dirname +/+ "samples";
+  if(thisProcess.argv.isEmpty, {
+	~samplesDir = thisProcess.nowExecutingPath.dirname +/+ "samples";
+  }, {
+	~samplesDir = thisProcess.argv[0]
+  });
 
   PathName.new(~samplesDir).filesDo { |afile|
     var buffer;
