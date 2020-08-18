@@ -148,7 +148,7 @@ impl Context {
                 Message::KnobDecrement { number: 3 } => {
                     self.change_selected_sequence(Sequence::decrement_rotate)
                 }
-                Message::Select => self.set_mode(Mode::Performance),
+                Message::SelectOn => self.set_mode(Mode::Performance),
                 _ => self.clone(),
             },
             Mode::SequenceMute => match message {

@@ -9,7 +9,7 @@ pub enum Message {
     KnobDecrement { number: i32 },
     Left,
     Right,
-    Select,
+    SelectOn,
     Up,
     ShiftOn,
     ShiftOff,
@@ -58,7 +58,7 @@ fn parse_incoming_osc_message(packet: OscPacket) -> Message {
                         } else if *c == 87 && *v == 127 {
                             Message::Up
                         } else if *c == 103 && *v == 127 {
-                            Message::Select
+                            Message::SelectOn
                         } else if *c == 32 && *v == 127 {
                             Message::ShiftOn
                         } else if *c == 32 && *v == 0 {
@@ -131,7 +131,7 @@ fn test_parse_incoming_select_message() {
         args: vec![rosc::OscType::Int(103), rosc::OscType::Int(127)],
     });
     let msg = parse_incoming_osc_message(packet);
-    assert!(matches!(msg, Message::Select));
+    assert!(matches!(msg, Message::SelectOn));
 }
 
 #[test]
