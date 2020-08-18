@@ -71,6 +71,12 @@ impl Sequence {
             .collect()
     }
 
+    pub fn default_event(&self) -> Event {
+        Event {
+            note_number: self.default_note_number,
+        }
+    }
+
     fn trigger_note_number_at_step(&self, note_number: i32, step: Step) -> Sequence {
         let new_trigger = Trigger {
             note_number,
@@ -441,4 +447,10 @@ fn test_toggle_step() {
             .active_steps()
             .len()
     );
+}
+
+#[test]
+fn test_default_event() {
+    let event = Sequence::with_default_note_number(37).default_event();
+    assert_eq!(Event { note_number: 37 }, event)
 }
