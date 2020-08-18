@@ -16,6 +16,7 @@ pub struct Context {
 pub enum Mode {
     SequenceEdit,
     SequenceMute,
+    SequenceSelect,
     Performance,
 }
 
@@ -158,11 +159,16 @@ impl Context {
                 Message::ShiftOff => self.set_mode(Mode::Performance),
                 _ => self.clone(),
             },
-            Mode::Performance => match message {
-                Message::ShiftOn => self.set_mode(Mode::SequenceMute),
+            Mode::SequenceSelect => match message {
                 Message::NoteOn { note_number: n } => {
                     self.select_sequence(note_number_to_sequence(*n))
                 }
+                Message::SelectOff => self.set_mode(Mode::Performance),
+                _ => self.clone(),
+            },
+            Mode::Performance => match message {
+                Message::ShiftOn => self.set_mode(Mode::SequenceMute),
+                Message::SelectOn => self.set_mode(Mode::SequenceSelect),
                 Message::KnobIncrement { number: 1 } => Context {
                     bpm: (self.bpm + 1.0).min(240.0),
                     ..self.clone()
@@ -206,7 +212,7 @@ fn test_process_note_on_message_to_toggle_step() {
 #[test]
 fn test_process_note_on_message_to_select_sequence() {
     let context = Context::default().set_mode(Mode::Performance);
-    let messages = vec![Message::NoteOn { note_number: 43 }];
+    let messages = vec![Message::SelectOn, Message::NoteOn { note_number: 43 }];
     let processed_context = context.process_messages(messages);
 
     assert_eq!(7, processed_context.selected_sequence);
