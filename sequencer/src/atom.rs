@@ -106,7 +106,7 @@ fn active_pads(context: &Context) -> HashSet<Pad> {
             .iter()
             .map(|s| Pad::new(s.0))
             .collect(),
-        Mode::Performance => active_sequences(context)
+        Mode::Performance | Mode::SequenceMute => active_sequences(context)
             .iter()
             .map(|i| Pad::from_sequence_number(*i))
             .collect(),

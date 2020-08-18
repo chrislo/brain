@@ -10,12 +10,12 @@ pub struct Context {
     pub bpm: f32,
     pub mode: Mode,
     pub tick: i32,
-    pub shift: bool,
 }
 
 #[derive(Debug, Copy, Clone)]
 pub enum Mode {
     SequenceEdit,
+    SequenceMute,
     Performance,
 }
 
@@ -32,7 +32,6 @@ impl Context {
             bpm: 120.0,
             mode: Mode::Performance,
             tick: 0,
-            shift: false,
         }
     }
 
@@ -125,13 +124,6 @@ impl Context {
         }
     }
 
-    fn set_shift(&self, value: bool) -> Context {
-        Context {
-            shift: value,
-            ..self.clone()
-        }
-    }
-
     fn process_message(&self, message: &Message) -> Context {
         match self.mode {
             Mode::SequenceEdit => match message {
@@ -159,13 +151,18 @@ impl Context {
                 Message::Select => self.set_mode(Mode::Performance),
                 _ => self.clone(),
             },
+            Mode::SequenceMute => match message {
+                Message::NoteOn { note_number: n } => {
+                    self.mute_sequence(note_number_to_sequence(*n))
+                }
+                Message::ShiftOff => self.set_mode(Mode::Performance),
+                _ => self.clone(),
+            },
             Mode::Performance => match message {
-                Message::ShiftOn => self.set_shift(true),
-                Message::ShiftOff => self.set_shift(false),
-                Message::NoteOn { note_number: n } => match self.shift {
-                    false => self.select_sequence(note_number_to_sequence(*n)),
-                    true => self.mute_sequence(note_number_to_sequence(*n)),
-                },
+                Message::ShiftOn => self.set_mode(Mode::SequenceMute),
+                Message::NoteOn { note_number: n } => {
+                    self.select_sequence(note_number_to_sequence(*n))
+                }
                 Message::KnobIncrement { number: 1 } => Context {
                     bpm: (self.bpm + 1.0).min(240.0),
                     ..self.clone()
