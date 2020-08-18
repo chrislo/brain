@@ -16,7 +16,7 @@ pub struct Sequence {
     triggers: HashMap<Step, HashSet<Trigger>>,
     number_of_steps: i32,
     mute: bool,
-    root_note: i32,
+    default_note_number: i32,
 }
 
 impl Sequence {
@@ -31,13 +31,13 @@ impl Sequence {
             triggers,
             number_of_steps: 16,
             mute: false,
-            root_note: 1,
+            default_note_number: 1,
         }
     }
 
-    pub fn with_root_note(root_note: i32) -> Sequence {
+    pub fn with_default_note_number(default_note_number: i32) -> Sequence {
         Sequence {
-            root_note,
+            default_note_number,
             ..Sequence::empty()
         }
     }
@@ -105,7 +105,7 @@ impl Sequence {
     }
 
     pub fn toggle_step(&self, step: Step) -> Sequence {
-        self.toggle_note_number_at_step(self.root_note, step)
+        self.toggle_note_number_at_step(self.default_note_number, step)
     }
 
     fn has_note_number_at_step(&self, note_number: i32, step: Step) -> bool {
@@ -176,9 +176,9 @@ impl Sequence {
         let active_steps = self.active_steps().len() as i32;
 
         if active_steps < self.number_of_steps {
-            self.euclidean_fill(self.root_note, active_steps + 1)
+            self.euclidean_fill(self.default_note_number, active_steps + 1)
         } else {
-            self.euclidean_fill(self.root_note, self.number_of_steps)
+            self.euclidean_fill(self.default_note_number, self.number_of_steps)
         }
     }
 
@@ -186,9 +186,9 @@ impl Sequence {
         let active_steps = self.active_steps().len() as i32;
 
         if active_steps > 0 {
-            self.euclidean_fill(self.root_note, active_steps - 1)
+            self.euclidean_fill(self.default_note_number, active_steps - 1)
         } else {
-            self.euclidean_fill(self.root_note, 0)
+            self.euclidean_fill(self.default_note_number, 0)
         }
     }
 
@@ -217,8 +217,8 @@ impl Sequence {
     pub fn euclidean_fill(&self, note_number: i32, onsets: i32) -> Sequence {
         let slope = onsets as f32 / self.number_of_steps as f32;
         let mut previous = 1;
-        let mut sequence =
-            Sequence::with_root_note(self.root_note).set_length(self.number_of_steps);
+        let mut sequence = Sequence::with_default_note_number(self.default_note_number)
+            .set_length(self.number_of_steps);
 
         if onsets > 0 {
             for i in 0..self.number_of_steps {
@@ -426,7 +426,7 @@ fn test_toggle_mute() {
 
 #[test]
 fn test_toggle_step() {
-    let sequence = Sequence::with_root_note(37);
+    let sequence = Sequence::with_default_note_number(37);
 
     assert_eq!(1, sequence.toggle_step(Step(1)).active_steps().len());
     assert_eq!(

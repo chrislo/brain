@@ -23,7 +23,7 @@ impl Context {
     pub fn default() -> Context {
         let mut sequences = vec![];
         for n in 36..=51 {
-            sequences.push(Sequence::with_root_note(n));
+            sequences.push(Sequence::with_default_note_number(n));
         }
 
         Context {
