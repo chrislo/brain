@@ -7,6 +7,7 @@ use crate::sequence::Step;
 pub struct Context {
     pub sequences: Vec<Sequence>,
     pub selected_sequence: usize,
+    pub performance_events: Vec<Event>,
     pub bpm: f32,
     pub mode: Mode,
     pub tick: i32,
@@ -30,6 +31,7 @@ impl Context {
         Context {
             sequences,
             selected_sequence: 0,
+            performance_events: vec![],
             bpm: 120.0,
             mode: Mode::Performance,
             tick: 0,
@@ -59,8 +61,20 @@ impl Context {
         new_context
     }
 
+    pub fn clear_performance_events(&self) -> Context {
+        let mut new_context = self.clone();
+        new_context.performance_events = vec![];
+        new_context
+    }
+
     pub fn events(&self) -> Vec<Event> {
-        self.events_for_tick(self.tick)
+        let mut events = self.events_for_tick(self.tick);
+
+        for event in &self.performance_events {
+            events.push(*event);
+        }
+
+        events
     }
 
     fn events_for_tick(&self, tick_number: i32) -> Vec<Event> {
@@ -80,6 +94,17 @@ impl Context {
 
     pub fn selected_sequence(&self) -> &Sequence {
         &self.sequences[self.selected_sequence]
+    }
+
+    fn trigger_default_note(&self, sequence_number: usize) -> Context {
+        let mut performance_events = self.performance_events.clone();
+        let event = self.sequences[sequence_number].default_event();
+        performance_events.push(event);
+
+        Context {
+            performance_events,
+            ..self.clone()
+        }
     }
 
     fn mute_sequence(&self, sequence_number: usize) -> Context {
@@ -167,6 +192,9 @@ impl Context {
                 _ => self.clone(),
             },
             Mode::Performance => match message {
+                Message::NoteOn { note_number: n } => {
+                    self.trigger_default_note(note_number_to_sequence(*n))
+                }
                 Message::ShiftOn => self.set_mode(Mode::SequenceMute),
                 Message::SelectOn => self.set_mode(Mode::SequenceSelect),
                 Message::KnobIncrement { number: 1 } => Context {
@@ -238,4 +266,21 @@ fn test_process_knob_1_bpm_set_message() {
 
     let processed_context = context.process_messages(vec![Message::KnobDecrement { number: 1 }]);
     assert_eq!(119.0, processed_context.bpm);
+}
+
+#[test]
+fn test_trigger_default_note() {
+    let context = Context::default();
+    let events = context.trigger_default_note(0).events();
+
+    assert_eq!(1, events.len());
+    assert_eq!(36, events[0].note_number);
+}
+
+#[test]
+fn test_clear_performance_events() {
+    let context = Context::default().trigger_default_note(0);
+
+    assert_eq!(1, context.events().len());
+    assert_eq!(0, context.clear_performance_events().events().len());
 }

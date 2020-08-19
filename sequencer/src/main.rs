@@ -35,6 +35,7 @@ fn main() {
             for event in events {
                 sampler_output.send(event.to_osc_message());
             }
+            current_context = current_context.clear_performance_events();
 
             let messages = r.try_iter().collect();
             let next_context = current_context.process_messages(messages).advance_tick();
